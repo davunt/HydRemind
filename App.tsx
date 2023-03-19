@@ -1,10 +1,11 @@
 import React, {useEffect, useState, useRef} from 'react'
-import { Platform, StyleSheet, View } from 'react-native';
+import { FlatList, Platform, StyleSheet, SafeAreaView, View } from 'react-native';
 import { DateTime } from 'luxon';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as Notifications from "expo-notifications";
 import { ButtonGroup } from '@rneui/themed';
-import { Button, Carousel, Card } from 'react-native-ui-lib';
+import { Text, Button, Carousel, Card } from 'react-native-ui-lib';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
   const [selectedHourRepeat, setSelectedHourRepeat] = useState<number>(0);
   const [selectedActiveStartTime, setSelectedActiveStartTime] = useState<DateTime>(DateTime.now().startOf('day').plus({ hours: 8 }))
   const [selectedActiveEndTime, setSelectedActiveEndTime] = useState<DateTime>(DateTime.now().startOf('day').plus({ hours: 22 }))
+  const [timeSLots, setTimeSlots] = useState<string[]>([])
 
   const notificationListener = useRef();
   const responseListener = useRef();
@@ -63,6 +65,28 @@ export default function App() {
       });
     })
 
+    const getNotificationConfig = async () => {
+      try {
+        const daysArrayString = await AsyncStorage.getItem('@daysKey');
+        const timesArrayString = await AsyncStorage.getItem('@timesKey');
+        const interval = await AsyncStorage.getItem('@timeIntervalKey');
+        const days = JSON.parse(daysArrayString);
+        const times = JSON.parse(timesArrayString);
+        const startTime = times[0];
+        const endTime = times[timeSLots.length - 1];
+
+        setSelectedDays(days);
+        setTimeSlots(JSON.parse(timesArrayString));
+        setSelectedHourRepeat(parseInt(interval));
+        setSelectedActiveStartTime(DateTime.fromFormat(startTime, 'hh:mm'));
+        setSelectedActiveEndTime(DateTime.fromFormat(endTime, 'hh:mm'));
+      } catch(err) {
+        console.error(err);
+      }
+    }
+
+    getNotificationConfig();
+
     return () => {
       Notifications.removeNotificationSubscription(notificationListener.current);
       Notifications.removeNotificationSubscription(responseListener.current);
@@ -76,7 +100,6 @@ export default function App() {
       notificationTimes.push(lastSetTime.toLocaleString(DateTime.TIME_24_SIMPLE));
       lastSetTime = lastSetTime.plus({ hours: incrementHour });
     }
-    console.log(notificationTimes);
     return notificationTimes;
   }
 
@@ -101,12 +124,28 @@ export default function App() {
     });
   }
 
+  const storeNotificationConfig = async (days: [], times: [], interval: number) => {
+    try {
+      const daysArrayString = JSON.stringify(days);
+      const timesArrayString = JSON.stringify(times);
+      await Promise.all([
+        AsyncStorage.setItem('@daysKey', daysArrayString),
+        AsyncStorage.setItem('@timesKey', timesArrayString),
+        AsyncStorage.setItem('@timeIntervalKey', interval.toString())
+      ])
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   const handleNotificationCreation = async () => {
     try {
       console.log('interval', selectedHourRepeat);
       console.log('startTime', selectedActiveStartTime);
       console.log('endTime', selectedActiveEndTime);
       console.log('days', selectedDays);
+
+      await Notifications.cancelAllScheduledNotificationsAsync();
   
       const notificationTimes = calculateNotficationTimes(selectedActiveStartTime, selectedActiveEndTime, selectedHourRepeat + 1);
   
@@ -126,14 +165,13 @@ export default function App() {
       const scheduleNotificationPromises: Promise<string[]> = [];
   
       selectedDays.forEach((day) => {
-        console.log('>day', day);
         notificationTimes.forEach((time) => {
-          console.log('>>time', time)
           scheduleNotificationPromises.push(scheduleNotifications(day +1, time))
         })
       });
   
       const resp = await Promise.all(scheduleNotificationPromises);
+      storeNotificationConfig(selectedDays, notificationTimes, selectedHourRepeat);
       console.log(resp)
     } catch (err) {
       console.error(err);
@@ -142,7 +180,7 @@ export default function App() {
 
   const reminderConfigComp = () => {
     return (
-      <Card flex center>
+      <Card flex center style={{ padding: 10 }}>
         <ButtonGroup
           buttons={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
           selectMultiple
@@ -167,16 +205,17 @@ export default function App() {
             value={selectedActiveStartTime.toJSDate()}
             mode='time'
             minuteInterval={30}
-            onChange={(e, timestamp) => setSelectedActiveStartTime(DateTime(timestamp))}
+            onChange={(e, timestamp) => setSelectedActiveStartTime(DateTime.fromJSDate(timestamp))}
           />
           <DateTimePicker
             value={selectedActiveEndTime?.toJSDate()}
-            onChange={(e, timestamp) => setSelectedActiveEndTime(DateTime(timestamp))}
+            onChange={(e, timestamp) => setSelectedActiveEndTime(DateTime.fromJSDate(timestamp))}
             mode='time'
             minuteInterval={30}
           />
         </View>
         <Button
+          style={{ width: '100%' }}
           label={'Save'}
           onPress={handleNotificationCreation}
         />
@@ -184,18 +223,33 @@ export default function App() {
     )
   }
 
+  const timeSlotComp = (item) => (
+    <Card containerStyle={{ padding: 20, marginVertical: 5, marginHorizontal: 15 }}>
+      <Text>
+        {item}
+      </Text>
+    </Card>
+  )
+
   return (
-    <View style={styles.container}>
-        <Carousel style={{ flex: 1 }} containerStyle={{height: 260, bottom: 0, position: 'absolute' }}>
+    <SafeAreaView style={styles.container}>
+        <FlatList
+          data={timeSLots}
+          renderItem={({item}) => timeSlotComp(item)}
+          keyExtractor={item => item}
+        />
+        <Carousel
+          style={{ height: 260 }}
+        >
             {reminderConfigComp()}
         </Carousel>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'blue',
+    // backgroundColor: 'blue',
   },
 });
