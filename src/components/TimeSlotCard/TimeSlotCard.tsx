@@ -16,17 +16,17 @@ export default function TimeSlotCard({ time }: Props) {
         const hoursFrom = diff.as('hours');
 
         if (minutesFrom < 0) {
-            return '';
+            return 'Past Due';
         } else if (minutesFrom < 60) {
             return `In ${Math.round(minutesFrom)} minutes`;
         } else {
-            return `In ${Math.round(hoursFrom)} hour(s)`;
+            return `In ~${Math.round(hoursFrom)} hour(s)`;
         }
     };
 
     return (
         <Card containerStyle={{ padding: 20, marginVertical: 5, marginHorizontal: 15 }}>
-            <Text>{time}</Text>
+            <Text h3>{time}</Text>
             <Text>{getTimeUntil()}</Text>
         </Card>
     );

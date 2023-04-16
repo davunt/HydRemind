@@ -131,6 +131,7 @@ export default function App() {
 
     const reminderConfigComp = (
         <ReminderConfig
+            loading={timesLoading}
             handleNotificationCreation={handleNotificationCreation}
             initialDayIndexes={selectedDays}
             initialIntervalIndex={selectedHourRepeat}
@@ -139,28 +140,22 @@ export default function App() {
         />
     );
 
-    const settingsComp = (
-      <Text>Hello</Text>
-    )
+    const settingsComp = <Text>Hello</Text>;
 
     const carouselPages = [reminderConfigComp, settingsComp];
 
     return (
         <View style={styles.container}>
-            {/* <Header
-          centerComponent={{ text: 'My Schedule', style: styles.heading }}
-    /> */}
             <View style={{ flex: 2 }}>
                 {timesLoading ? (
                     <View style={{ marginHorizontal: 15 }}>
-                        <Skeleton
-                            height={80}
-                            animation="wave"
-                            style={{ padding: 20, marginVertical: 5 }}
-                        />
-                        <Skeleton height={50} style={{ padding: 20, marginVertical: 5 }} />
-                        <Skeleton height={40} style={{ padding: 20, marginVertical: 5 }} />
-                        <Skeleton height={40} style={{ padding: 20, marginVertical: 5 }} />
+                        {[...Array(3)].map(() => (
+                            <Skeleton
+                                height={80}
+                                animation="wave"
+                                style={{ padding: 20, marginVertical: 5 }}
+                            />
+                        ))}
                     </View>
                 ) : (
                     <FlatList

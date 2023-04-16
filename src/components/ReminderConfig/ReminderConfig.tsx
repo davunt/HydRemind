@@ -6,6 +6,7 @@ import { Text, Button } from '@rneui/themed';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface Props {
+    loading: boolean;
     handleNotificationCreation: (a: number[], b: number, c: DateTime, d: DateTime) => {};
     initialDayIndexes: number[];
     initialIntervalIndex: number;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function ReminderConfig({
+    loading,
     handleNotificationCreation,
     initialDayIndexes,
     initialIntervalIndex,
@@ -108,6 +110,7 @@ export default function ReminderConfig({
             <View style={{ marginVertical: 10, width: '100%' }}>
                 <Button
                     title="Save"
+                    loading={loading}
                     onPress={() =>
                         handleNotificationCreation(
                             selectedDayIndexes,
@@ -126,6 +129,8 @@ const styles = StyleSheet.create({
     container: {
         padding: 10,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
     },
 });

@@ -1,9 +1,28 @@
-import React, { useEffect, useRef } from 'react';
-import { Platform, StyleSheet, SafeAreaView } from 'react-native';
+import React, { ReactElement, useEffect, useRef } from 'react';
+import { ThemeProvider, useTheme, useThemeMode } from '@rneui/themed';
+import { Platform, StyleSheet, SafeAreaView, Appearance, View } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 
+import theme from './theme';
+
 import MainScreen from './src/screens/main/main';
+
+interface ColorSchemeProps {
+    children: ReactElement;
+}
+
+const ColorScheme = ({ children }: ColorSchemeProps) => {
+    const colorMode = Appearance.getColorScheme() || 'light';
+    const { theme } = useTheme();
+    const { setMode } = useThemeMode();
+
+    React.useEffect(() => {
+        setMode(colorMode);
+    }, [colorMode]);
+
+    return <View style={{ backgroundColor: theme.colors.background, flex: 1 }}>{children}</View>;
+};
 
 export default function App() {
     const notificationListener = useRef<Notifications.Subscription>();
@@ -70,9 +89,13 @@ export default function App() {
     }, []);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <MainScreen />
-        </SafeAreaView>
+        <ThemeProvider theme={theme}>
+            <ColorScheme>
+                <SafeAreaView style={styles.container}>
+                    <MainScreen />
+                </SafeAreaView>
+            </ColorScheme>
+        </ThemeProvider>
     );
 }
 
