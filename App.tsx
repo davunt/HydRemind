@@ -8,6 +8,8 @@ import theme from './theme';
 
 import MainScreen from './src/screens/main/main';
 
+import { setTodaysHydration } from './storage/dailyHydration';
+
 interface ColorSchemeProps {
     children: ReactElement;
 }
@@ -18,10 +20,22 @@ const ColorScheme = ({ children }: ColorSchemeProps) => {
     const { setMode } = useThemeMode();
 
     React.useEffect(() => {
+        console.log(colorMode);
+        // console.log(colorScheme);
         setMode(colorMode);
     }, [colorMode]);
 
-    return <View style={{ backgroundColor: theme.colors.background, flex: 1 }}>{children}</View>;
+    return (
+        <View
+            style={{
+                flex: 1,
+                flexDirection: 'column',
+                backgroundColor: theme.colors.background,
+            }}
+        >
+            {children}
+        </View>
+    );
 };
 
 export default function App() {
@@ -64,15 +78,15 @@ export default function App() {
 
     useEffect(() => {
         registerForNotificationsAsync().then(() => {
-            notificationListener.current = Notifications.addNotificationReceivedListener(
-                (notification) => {
-                    console.log('notification!');
-                }
-            );
-
             responseListener.current = Notifications.addNotificationResponseReceivedListener(
                 (response) => {
+                    console.log('ttt');
                     console.log(response);
+                    console.log(response.notification.request.content.data.time);
+                    if (response.actionIdentifier === 'hydrated') {
+                        console.log('test');
+                        setTodaysHydration(response.notification.request.content.data.time);
+                    }
                 }
             );
         });
@@ -91,7 +105,12 @@ export default function App() {
     return (
         <ThemeProvider theme={theme}>
             <ColorScheme>
-                <SafeAreaView style={styles.container}>
+                <SafeAreaView
+                    style={{
+                        flex: 1,
+                        flexDirection: 'column',
+                    }}
+                >
                     <MainScreen />
                 </SafeAreaView>
             </ColorScheme>
@@ -100,8 +119,9 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-    },
+    // container: {
+    //     flex: 1,
+    //     flexDirection: 'column',
+    //     backgroundColor: theme.colors.background,
+    // },
 });

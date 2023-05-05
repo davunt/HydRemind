@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
+import { useTheme } from '@rneui/themed';
 import { DateTime } from 'luxon';
-import { StyleSheet } from 'react-native';
-import { Card, Text } from '@rneui/themed';
+import { StyleSheet, View } from 'react-native';
+import { Card, Text, Icon } from '@rneui/themed';
 
 interface Props {
     time: string;
+    completed: boolean;
 }
 
-export default function TimeSlotCard({ time }: Props) {
+export default function TimeSlotCard({ time, completed }: Props) {
+    const { theme } = useTheme();
+
     const getTimeUntil = () => {
         const now = DateTime.now();
         const notificationTime = DateTime.fromFormat(time, 'hh:mm');
@@ -24,10 +28,52 @@ export default function TimeSlotCard({ time }: Props) {
         }
     };
 
+    const getIcon = () => {
+        const currentTime = DateTime.now();
+        const timeCardTime = DateTime.fromFormat(time, 'hh:mm');
+
+        if (completed) {
+            return <Icon name="water" color={theme.colors.primary} type="ionicon" />;
+        } else if (timeCardTime < currentTime) {
+            return <Icon name="water-outline" type="ionicon" />;
+        }
+
+        return <></>;
+    };
+
     return (
-        <Card containerStyle={{ padding: 20, marginVertical: 5, marginHorizontal: 15 }}>
-            <Text h3>{time}</Text>
-            <Text>{getTimeUntil()}</Text>
+        <Card
+            containerStyle={{
+                padding: 20,
+                marginVertical: 5,
+                marginHorizontal: 15,
+            }}
+        >
+            <View
+                style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                }}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: 'flex-start',
+                    }}
+                >
+                    <Text h3>{time}</Text>
+                    <Text>{getTimeUntil()}</Text>
+                </View>
+                <View
+                    style={{
+                        flex: 1,
+                        flexDirection: 'row',
+                        justifyContent: 'flex-end',
+                    }}
+                >
+                    {getIcon()}
+                </View>
+            </View>
         </Card>
     );
 }

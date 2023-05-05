@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from 'react';
+// import { signal, effect } from '@preact/signals-react';
+import { useTheme } from '@rneui/themed';
 import { FlatList, StyleSheet, Dimensions, View } from 'react-native';
 import { DateTime } from 'luxon';
 import * as Notifications from 'expo-notifications';
 import Carousel from 'react-native-reanimated-carousel';
-import { Skeleton, Text } from '@rneui/themed';
+import { Skeleton, Text, Button } from '@rneui/themed';
 
 import ReminderConfig from '../../components/ReminderConfig/ReminderConfig';
 import TimeSlotCard from '../../components/TimeSlotCard/TimeSlotCard';
 
 import { saveNotificationConfig, getNotificationConfig } from '../../../storage/notification';
+import {
+    getTodaysHydration,
+    setTodaysHydration,
+    todaysHydrationSig,
+    setH,
+} from '../../../storage/dailyHydration';
+import { effect } from '@preact/signals-react';
+
+// const count = signal(0);
 
 export default function App() {
+    const { theme } = useTheme();
+
     const width = Dimensions.get('window').width;
     const [timesLoading, setTimesLoading] = useState(true);
     const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3]);
@@ -22,11 +35,21 @@ export default function App() {
         DateTime.now().startOf('day').plus({ hours: 22 })
     );
     const [timeSLots, setTimeSlots] = useState<string[]>([]);
+    const [dailyHydrationStats, setDailyHydrationStats] = useState<[{}]>([{}]);
+
+    // effect(() => console.log('-', todaysHydrationSig.value));
+    console.log('-', todaysHydrationSig.value);
+
+    if (todaysHydrationSig.value && todaysHydrationSig.value['17:00']) {
+        console.log(todaysHydrationSig.value['17:00']);
+    }
 
     useEffect(() => {
         const getNotificationConfigFromStorage = async () => {
             try {
                 const configObject = await getNotificationConfig();
+                // effect(() => console.log(count.value));
+
                 if (configObject) {
                     const startTime = configObject.times[0];
                     const endTime = configObject.times[configObject.times.length - 1];
@@ -43,7 +66,27 @@ export default function App() {
             }
         };
 
+        const getDailyHydrationFromStorage = async () => {
+            try {
+                // cosnt test = await setTodaysHydration();
+                const dailyHydrationObject = await getTodaysHydration();
+                console.log('t', dailyHydrationObject);
+                if (dailyHydrationObject) {
+                    setDailyHydrationStats(dailyHydrationObject);
+                }
+            } catch (err) {}
+        };
+
+        // effect(() => {
+        //     console.log(count.value);
+        //     console.log('hhhh');
+        //     getDailyHydrationFromStorage();
+        // });
+
+        // setH();
+
         getNotificationConfigFromStorage();
+        getDailyHydrationFromStorage();
     }, []);
 
     const calculateNotficationTimes = (
@@ -68,9 +111,10 @@ export default function App() {
         return Notifications.scheduleNotificationAsync({
             content: {
                 title: 'HydRemind',
-                body: 'Time to drink!',
+                body: 'Time to hydrate!',
                 sound: 'defaultCritical',
                 categoryIdentifier: 'WaterReminder',
+                data: { weekday, time },
             },
             trigger: {
                 weekday,
@@ -98,6 +142,10 @@ export default function App() {
             );
 
             await Notifications.setNotificationCategoryAsync('WaterReminder', [
+                {
+                    buttonTitle: "I've Hydrated!",
+                    identifier: 'hydrated',
+                },
                 {
                     buttonTitle: 'Snooze',
                     identifier: 'snooze',
@@ -127,7 +175,9 @@ export default function App() {
         }
     };
 
-    const timeSlotComp = (item) => <TimeSlotCard time={item} />;
+    const timeSlotComp = (item) => (
+        <TimeSlotCard time={item} key={item} completed={todaysHydrationSig.value[item] || false} />
+    );
 
     const reminderConfigComp = (
         <ReminderConfig
@@ -140,7 +190,20 @@ export default function App() {
         />
     );
 
-    const settingsComp = <Text>Hello</Text>;
+    const settingsComp = (
+        <View>
+            <Text>Hello</Text>
+            <Button
+                title="Set Notication Test"
+                onPress={async () =>
+                    await scheduleNotifications(
+                        5,
+                        DateTime.now().plus({ minute: 1 }).toLocaleString(DateTime.TIME_24_SIMPLE)
+                    )
+                }
+            ></Button>
+        </View>
+    );
 
     const carouselPages = [reminderConfigComp, settingsComp];
 
@@ -166,7 +229,14 @@ export default function App() {
                     />
                 )}
             </View>
-            <View style={{ flex: 1 }}>
+            <View
+                style={{
+                    flex: 1,
+                    backgroundColor: theme.colors.white,
+                    shadowOpacity: 0.1,
+                    shadowRadius: 5,
+                }}
+            >
                 <Carousel
                     loop={false}
                     autoPlay={false}
@@ -184,10 +254,5 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-    },
-    heading: {
-        color: 'white',
-        fontSize: 22,
-        fontWeight: 'bold',
     },
 });
