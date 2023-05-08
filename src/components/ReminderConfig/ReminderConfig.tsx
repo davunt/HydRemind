@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { DateTime } from 'luxon';
-import { Picker, Stepper } from 'react-native-ui-lib';
+import { Stepper } from 'react-native-ui-lib';
 import { Text, Button } from '@rneui/themed';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+import SelectBottomSheet from '../SelectBottomSheet/SelectBottomSheet';
 
 interface Props {
     loading: boolean;
@@ -28,16 +30,6 @@ export default function ReminderConfig({
     const [selectedStartTime, setSelectedStartTime] = useState<DateTime>(initialStartTime);
     const [selectedEndTime, setSelectedEndTime] = useState<DateTime>(initialEndTime);
 
-    const options = [
-        { label: 'Mon', fullLabel: 'Monday', value: 2 },
-        { label: 'Tue', fullLabel: 'Tuesday', value: 3 },
-        { label: 'Wed', fullLabel: 'Wednesday', value: 4 },
-        { label: 'Thu', fullLabel: 'Thursday', value: 5 },
-        { label: 'Fri', fullLabel: 'Friday', value: 6 },
-        { label: 'Sat', fullLabel: 'Saturday', value: 7 },
-        { label: 'Sun', fullLabel: 'Sunday', value: 1 },
-    ];
-
     useEffect(() => {
         setSelectedDayIndexes(initialDayIndexes);
         setSelectedIntervalIndex(initialIntervalIndex);
@@ -47,34 +39,27 @@ export default function ReminderConfig({
 
     return (
         <View style={styles.container}>
-            <View style={{ marginVertical: 10, flexDirection: 'row' }}>
-                <Text style={{ marginRight: 5, alignSelf: 'center' }}>Remind me on</Text>
-                <View
-                    style={{
-                        backgroundColor: 'lightgrey',
-                        paddingHorizontal: 5,
-                        borderRadius: 5,
-                        justifyContent: 'center',
-                    }}
-                >
-                    <Picker
-                        value={selectedDayIndexes}
-                        floatingPlaceholder
-                        onChange={(days: number[]) => setSelectedDayIndexes(days)}
-                        mode={'MULTI'}
-                        useSafeArea
-                    >
-                        {options.map((option) => (
-                            <Picker.Item
-                                key={option.value}
-                                value={option.value}
-                                label={option.label}
-                            />
-                        ))}
-                    </Picker>
-                </View>
+            <View
+                style={{
+                    marginVertical: 10,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                }}
+            >
+                <Text style={{ marginRight: 5, alignSelf: 'center' }}>On</Text>
+                <SelectBottomSheet
+                    multiple
+                    initialSelected={selectedDayIndexes}
+                    onSave={(days: number[]) => setSelectedDayIndexes(days)}
+                />
             </View>
-            <View style={{ marginVertical: 10, flexDirection: 'row' }}>
+            <View
+                style={{
+                    marginVertical: 10,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                }}
+            >
                 <Text style={{ marginRight: 5, alignSelf: 'center' }}>Every</Text>
                 <Stepper
                     value={selectedIntervalIndex}
@@ -127,9 +112,8 @@ export default function ReminderConfig({
 
 const styles = StyleSheet.create({
     container: {
-        padding: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
+        marginLeft: 20,
+        marginRight: 20,
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
     },

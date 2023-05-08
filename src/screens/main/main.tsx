@@ -1,25 +1,16 @@
 import React, { useEffect, useState } from 'react';
-// import { signal, effect } from '@preact/signals-react';
 import { useTheme } from '@rneui/themed';
 import { FlatList, StyleSheet, Dimensions, View } from 'react-native';
 import { DateTime } from 'luxon';
 import * as Notifications from 'expo-notifications';
 import Carousel from 'react-native-reanimated-carousel';
-import { Skeleton, Text, Button } from '@rneui/themed';
+import { Skeleton, Text, Button, Icon } from '@rneui/themed';
 
 import ReminderConfig from '../../components/ReminderConfig/ReminderConfig';
 import TimeSlotCard from '../../components/TimeSlotCard/TimeSlotCard';
 
 import { saveNotificationConfig, getNotificationConfig } from '../../../storage/notification';
-import {
-    getTodaysHydration,
-    setTodaysHydration,
-    todaysHydrationSig,
-    setH,
-} from '../../../storage/dailyHydration';
-import { effect } from '@preact/signals-react';
-
-// const count = signal(0);
+import { getTodaysHydration, todaysHydrationSig } from '../../../storage/dailyHydration';
 
 export default function App() {
     const { theme } = useTheme();
@@ -35,20 +26,11 @@ export default function App() {
         DateTime.now().startOf('day').plus({ hours: 22 })
     );
     const [timeSLots, setTimeSlots] = useState<string[]>([]);
-    const [dailyHydrationStats, setDailyHydrationStats] = useState<[{}]>([{}]);
-
-    // effect(() => console.log('-', todaysHydrationSig.value));
-    console.log('-', todaysHydrationSig.value);
-
-    if (todaysHydrationSig.value && todaysHydrationSig.value['17:00']) {
-        console.log(todaysHydrationSig.value['17:00']);
-    }
 
     useEffect(() => {
         const getNotificationConfigFromStorage = async () => {
             try {
                 const configObject = await getNotificationConfig();
-                // effect(() => console.log(count.value));
 
                 if (configObject) {
                     const startTime = configObject.times[0];
@@ -68,22 +50,9 @@ export default function App() {
 
         const getDailyHydrationFromStorage = async () => {
             try {
-                // cosnt test = await setTodaysHydration();
-                const dailyHydrationObject = await getTodaysHydration();
-                console.log('t', dailyHydrationObject);
-                if (dailyHydrationObject) {
-                    setDailyHydrationStats(dailyHydrationObject);
-                }
+                await getTodaysHydration();
             } catch (err) {}
         };
-
-        // effect(() => {
-        //     console.log(count.value);
-        //     console.log('hhhh');
-        //     getDailyHydrationFromStorage();
-        // });
-
-        // setH();
 
         getNotificationConfigFromStorage();
         getDailyHydrationFromStorage();
@@ -132,6 +101,8 @@ export default function App() {
         selectedActiveEndTimeq
     ) => {
         try {
+            console.log('Setting notifications');
+            console.log('=>', selectedDaysq);
             setTimesLoading(true);
             await Notifications.cancelAllScheduledNotificationsAsync();
 
@@ -205,6 +176,21 @@ export default function App() {
         </View>
     );
 
+    const emptyListComp = () => (
+        <View
+            style={{
+                flexGrow: 1,
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <Text h3>No reminders set</Text>
+            <Text>Please set your reminders below</Text>
+            <Icon name="arrow-down-outline" type="ionicon" />
+        </View>
+    );
+
     const carouselPages = [reminderConfigComp, settingsComp];
 
     return (
@@ -222,10 +208,12 @@ export default function App() {
                     </View>
                 ) : (
                     <FlatList
+                        contentContainerStyle={{ flexGrow: 1 }}
                         data={timeSLots}
                         renderItem={({ item }) => timeSlotComp(item)}
                         keyExtractor={(item) => item}
                         refreshing={true}
+                        ListEmptyComponent={emptyListComp}
                     />
                 )}
             </View>
