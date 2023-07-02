@@ -1,10 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { BottomSheet, Button, ListItem, Icon } from '@rneui/themed';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import * as Haptics from 'expo-haptics';
+import { useTheme, Button, ListItem } from '@rneui/themed';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 interface Props {
+    title: string;
     initialSelected: number[];
     multiple: boolean;
-    onSave: (days: number[]) => void;
+    loading: boolean;
+    onSave: (selectedOptions: number[]) => void;
+    options: {
+        label: string;
+        fullLabel: string;
+        value: number;
+    }[];
 }
 
 interface Option {
@@ -13,25 +22,34 @@ interface Option {
     value: number;
 }
 
-export default function TimeSlotCard({ initialSelected = [], multiple, onSave }: Props) {
-    const [isVisible, setIsVisible] = useState(false);
+export default function TimeSlotCard({
+    title,
+    initialSelected = [],
+    multiple,
+    loading,
+    onSave,
+    options,
+}: Props) {
+    const { theme } = useTheme();
+
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+    const bottomSheetSnapPoints = useMemo(() => ['75%', '90%'], []);
+
     const [selected, setSelected] = useState<number[]>(initialSelected);
 
     useEffect(() => {
         setSelected(initialSelected);
     }, [initialSelected]);
 
-    const options = [
-        { label: 'Mon', fullLabel: 'Monday', value: 2 },
-        { label: 'Tue', fullLabel: 'Tuesday', value: 3 },
-        { label: 'Wed', fullLabel: 'Wednesday', value: 4 },
-        { label: 'Thu', fullLabel: 'Thursday', value: 5 },
-        { label: 'Fri', fullLabel: 'Friday', value: 6 },
-        { label: 'Sat', fullLabel: 'Saturday', value: 7 },
-        { label: 'Sun', fullLabel: 'Sunday', value: 1 },
-    ];
+    const handleSheetChanges = (index: number) => {
+        if (index < 0) handleSave(); // if sheet hidden
+    };
 
     const selectItem = (selectedIndex: number) => {
+        console.log(selectedIndex);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
         if (selected.indexOf(selectedIndex) > -1) {
             const updatedSelectedList = selected.filter((o) => selectedIndex != o);
             setSelected(updatedSelectedList);
@@ -42,7 +60,6 @@ export default function TimeSlotCard({ initialSelected = [], multiple, onSave }:
 
     const handleSave = () => {
         onSave(selected);
-        setIsVisible(false);
     };
 
     const getSelectedLabels = () => {
@@ -54,12 +71,39 @@ export default function TimeSlotCard({ initialSelected = [], multiple, onSave }:
 
     return (
         <>
-            <Button type="outline" onPress={() => setIsVisible(true)}>
+            <Button
+                type="outline"
+                onPress={() => bottomSheetModalRef.current?.present()}
+                loading={loading}
+                containerStyle={{ flex: 1 }}
+            >
                 {getSelectedLabels()}
             </Button>
-            <BottomSheet isVisible={isVisible} onBackdropPress={() => setIsVisible(false)}>
-                {options.map((option, i) => (
-                    <ListItem key={i} onPress={() => selectItem(option.value)} bottomDivider>
+            <BottomSheetModal
+                ref={bottomSheetModalRef}
+                enablePanDownToClose={true}
+                index={0}
+                snapPoints={bottomSheetSnapPoints}
+                onChange={handleSheetChanges}
+            >
+                <ListItem
+                    key={'title'}
+                    bottomDivider
+                    containerStyle={{
+                        backgroundColor: theme.colors.white,
+                    }}
+                >
+                    <ListItem.Content>
+                        <ListItem.Title style={{ fontWeight: 'bold' }}>{title}</ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
+                {options.map((option: Option, i) => (
+                    <ListItem
+                        key={i}
+                        onPress={() => selectItem(option.value)}
+                        bottomDivider
+                        containerStyle={{ backgroundColor: theme.colors.white }}
+                    >
                         {multiple && (
                             <ListItem.CheckBox
                                 checked={selected.indexOf(option.value) > -1}
@@ -67,23 +111,11 @@ export default function TimeSlotCard({ initialSelected = [], multiple, onSave }:
                             />
                         )}
                         <ListItem.Content>
-                            <ListItem.Title>{option.fullLabel}</ListItem.Title>
+                            <ListItem.Subtitle>{option.fullLabel}</ListItem.Subtitle>
                         </ListItem.Content>
                     </ListItem>
                 ))}
-                <ListItem key={'cancel'} onPress={() => setIsVisible(false)} bottomDivider>
-                    <Icon name="close" type="ionicons" />
-                    <ListItem.Content>
-                        <ListItem.Title>{'Cancel'}</ListItem.Title>
-                    </ListItem.Content>
-                </ListItem>
-                <ListItem key={'save'} onPress={handleSave}>
-                    <Icon name="save" type="ionicons" />
-                    <ListItem.Content>
-                        <ListItem.Title>{'Save'}</ListItem.Title>
-                    </ListItem.Content>
-                </ListItem>
-            </BottomSheet>
+            </BottomSheetModal>
         </>
     );
 }

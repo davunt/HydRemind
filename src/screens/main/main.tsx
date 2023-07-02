@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useTheme } from '@rneui/themed';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { FlatList, StyleSheet, Dimensions, View } from 'react-native';
 import { DateTime } from 'luxon';
 import * as Notifications from 'expo-notifications';
@@ -10,14 +11,27 @@ import ReminderConfig from '../../components/ReminderConfig/ReminderConfig';
 import TimeSlotCard from '../../components/TimeSlotCard/TimeSlotCard';
 
 import { saveNotificationConfig, getNotificationConfig } from '../../../storage/notification';
-import { getTodaysHydration, todaysHydrationSig } from '../../../storage/dailyHydration';
+import {
+    getTodaysHydration,
+    addHydrationStat,
+    removeHydrationStat,
+    todaysHydrationSig,
+} from '../../../storage/dailyHydration';
 
-export default function App() {
+interface Props {
+    appStateVisible: boolean;
+}
+
+interface notificationConfigType {
+    interval: number;
+    times: string[];
+}
+
+export default function App({ appStateVisible }: Props) {
     const { theme } = useTheme();
-
     const width = Dimensions.get('window').width;
-    const [timesLoading, setTimesLoading] = useState(true);
-    const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3]);
+
+    const [timesLoading, setTimesLoading] = useState<boolean>(true);
     const [selectedHourRepeat, setSelectedHourRepeat] = useState<number>(1);
     const [selectedActiveStartTime, setSelectedActiveStartTime] = useState<DateTime>(
         DateTime.now().startOf('day').plus({ hours: 8 })
@@ -30,13 +44,12 @@ export default function App() {
     useEffect(() => {
         const getNotificationConfigFromStorage = async () => {
             try {
-                const configObject = await getNotificationConfig();
+                const configObject: notificationConfigType = await getNotificationConfig();
 
                 if (configObject) {
                     const startTime = configObject.times[0];
                     const endTime = configObject.times[configObject.times.length - 1];
 
-                    setSelectedDays(configObject.days);
                     setTimeSlots(configObject.times);
                     setSelectedHourRepeat(configObject.interval);
                     setSelectedActiveStartTime(DateTime.fromFormat(startTime, 'hh:mm'));
@@ -51,18 +64,20 @@ export default function App() {
         const getDailyHydrationFromStorage = async () => {
             try {
                 await getTodaysHydration();
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
         };
 
         getNotificationConfigFromStorage();
         getDailyHydrationFromStorage();
-    }, []);
+    }, [appStateVisible]);
 
     const calculateNotficationTimes = (
         startTime: DateTime,
         endTime: DateTime,
         incrementHour: number
-    ) => {
+    ): string[] => {
         const notificationTimes = [];
         let lastSetTime = startTime;
         while (lastSetTime <= endTime) {
@@ -73,7 +88,6 @@ export default function App() {
     };
 
     const scheduleNotifications = async (weekday: number, time: string) => {
-        console.log(weekday, time.split(':')[0], time.split(':')[1]);
         const hour = parseInt(time.split(':')[0]);
         const minute = parseInt(time.split(':')[1]);
 
@@ -95,14 +109,11 @@ export default function App() {
     };
 
     const handleNotificationCreation = async (
-        selectedDaysq,
-        selectedHourRepeatq,
-        selectedActiveStartTimeq,
-        selectedActiveEndTimeq
+        selectedHourRepeatq: number,
+        selectedActiveStartTimeq: DateTime,
+        selectedActiveEndTimeq: DateTime
     ) => {
         try {
-            console.log('Setting notifications');
-            console.log('=>', selectedDaysq);
             setTimesLoading(true);
             await Notifications.cancelAllScheduledNotificationsAsync();
 
@@ -124,16 +135,18 @@ export default function App() {
             ]);
 
             const scheduleNotificationPromises: Promise<string[]> = [];
+            console.log('here');
 
-            selectedDaysq.forEach((day) => {
+            const days = [1, 2, 3, 4, 5, 6, 7];
+
+            days.forEach((day) => {
                 notificationTimes.forEach((time) => {
                     scheduleNotificationPromises.push(scheduleNotifications(day, time));
                 });
             });
 
             const resp = await Promise.all(scheduleNotificationPromises);
-            saveNotificationConfig(selectedDaysq, notificationTimes, selectedHourRepeatq);
-            setSelectedDays(selectedDaysq);
+            saveNotificationConfig(notificationTimes, selectedHourRepeatq);
             setSelectedHourRepeat(selectedHourRepeatq);
             setSelectedActiveStartTime(selectedActiveStartTimeq);
             setSelectedActiveEndTime(selectedActiveEndTimeq);
@@ -147,21 +160,26 @@ export default function App() {
     };
 
     const timeSlotComp = (item) => (
-        <TimeSlotCard time={item} key={item} completed={todaysHydrationSig.value[item] || false} />
+        <TimeSlotCard
+            time={item}
+            key={item}
+            completed={todaysHydrationSig.value[item] || false}
+            addHydrationStat={(time) => addHydrationStat(time)}
+            removeHydrationStat={(time) => removeHydrationStat(time)}
+        />
     );
 
     const reminderConfigComp = (
         <ReminderConfig
             loading={timesLoading}
             handleNotificationCreation={handleNotificationCreation}
-            initialDayIndexes={selectedDays}
             initialIntervalIndex={selectedHourRepeat}
             initialStartTime={selectedActiveStartTime}
             initialEndTime={selectedActiveEndTime}
         />
     );
 
-    const settingsComp = (
+    const devComp = (
         <View>
             <Text>Hello</Text>
             <Button
@@ -179,47 +197,53 @@ export default function App() {
     const emptyListComp = () => (
         <View
             style={{
-                flexGrow: 1,
-                flex: 1,
+                flexGrow: 3,
+                flex: 3,
+                padding: 10,
+                // backgroundColor: 'red',
                 justifyContent: 'center',
                 alignItems: 'center',
             }}
         >
-            <Text h3>No reminders set</Text>
+            <Text h4 h4Style={{ fontWeight: 'bold' }}>
+                No reminders set
+            </Text>
             <Text>Please set your reminders below</Text>
             <Icon name="arrow-down-outline" type="ionicon" />
         </View>
     );
 
-    const carouselPages = [reminderConfigComp, settingsComp];
+    const carouselPages = [reminderConfigComp];
 
     return (
         <View style={styles.container}>
+            <Text h1 h1Style={{ fontWeight: 'bold' }} style={{ padding: 10 }}>
+                {DateTime.local().toLocaleString({ weekday: 'long' })}
+            </Text>
             <View style={{ flex: 2 }}>
                 {timesLoading ? (
                     <View style={{ marginHorizontal: 15 }}>
-                        {[...Array(3)].map(() => (
+                        {[...Array(2)].map((_, i) => (
                             <Skeleton
-                                height={80}
-                                animation="wave"
+                                key={`timeSlotSkeleton-${i}`}
                                 style={{ padding: 20, marginVertical: 5 }}
                             />
                         ))}
                     </View>
                 ) : (
                     <FlatList
+                        numColumns={2}
                         contentContainerStyle={{ flexGrow: 1 }}
                         data={timeSLots}
                         renderItem={({ item }) => timeSlotComp(item)}
-                        keyExtractor={(item) => item}
-                        refreshing={true}
+                        keyExtractor={(item) => `timeSlot${item}`}
                         ListEmptyComponent={emptyListComp}
                     />
                 )}
             </View>
             <View
                 style={{
-                    flex: 1,
+                    // flex: 1,
                     backgroundColor: theme.colors.white,
                     shadowOpacity: 0.1,
                     shadowRadius: 5,
@@ -227,6 +251,7 @@ export default function App() {
             >
                 <Carousel
                     loop={false}
+                    height={width / 2}
                     autoPlay={false}
                     pagingEnabled={true}
                     width={width}
@@ -241,6 +266,6 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexDirection: 'column',
+        // flexDirection: 'column',
     },
 });

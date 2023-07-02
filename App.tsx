@@ -1,27 +1,29 @@
-import React, { ReactElement, useEffect, useRef } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme, useThemeMode } from '@rneui/themed';
-import { Platform, StyleSheet, SafeAreaView, Appearance, View } from 'react-native';
+import { Platform, AppState, View, useColorScheme } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 import theme from './theme';
 
 import MainScreen from './src/screens/main/main';
 
-import { setTodaysHydration } from './storage/dailyHydration';
+import { addHydrationStat } from './storage/dailyHydration';
 
 interface ColorSchemeProps {
     children: ReactElement;
 }
 
 const ColorScheme = ({ children }: ColorSchemeProps) => {
-    const colorMode = Appearance.getColorScheme() || 'light';
+    const colorMode = useColorScheme() || 'light';
     const { theme } = useTheme();
     const { setMode } = useThemeMode();
 
     React.useEffect(() => {
         console.log(colorMode);
-        // console.log(colorScheme);
         setMode(colorMode);
     }, [colorMode]);
 
@@ -41,6 +43,9 @@ const ColorScheme = ({ children }: ColorSchemeProps) => {
 export default function App() {
     const notificationListener = useRef<Notifications.Subscription>();
     const responseListener = useRef<Notifications.Subscription>();
+
+    const appState = useRef(AppState.currentState);
+    const [appStateVisible, setAppStateVisible] = useState(false);
 
     Notifications.setNotificationHandler({
         handleNotification: async () => ({
@@ -77,21 +82,29 @@ export default function App() {
     }
 
     useEffect(() => {
+        const subscription = AppState.addEventListener('change', (nextAppState) => {
+            if (nextAppState === 'active') {
+                setAppStateVisible(true);
+            }
+
+            if (nextAppState === 'background') {
+                setAppStateVisible(false);
+            }
+        });
+
         registerForNotificationsAsync().then(() => {
             responseListener.current = Notifications.addNotificationResponseReceivedListener(
                 (response) => {
-                    console.log('ttt');
-                    console.log(response);
-                    console.log(response.notification.request.content.data.time);
                     if (response.actionIdentifier === 'hydrated') {
-                        console.log('test');
-                        setTodaysHydration(response.notification.request.content.data.time);
+                        addHydrationStat(response.notification.request.content.data.time);
                     }
                 }
             );
         });
 
         return () => {
+            subscription.remove();
+
             if (notificationListener.current) {
                 Notifications.removeNotificationSubscription(notificationListener.current);
             }
@@ -103,25 +116,23 @@ export default function App() {
     }, []);
 
     return (
-        <ThemeProvider theme={theme}>
-            <ColorScheme>
-                <SafeAreaView
-                    style={{
-                        flex: 1,
-                        flexDirection: 'column',
-                    }}
-                >
-                    <MainScreen />
-                </SafeAreaView>
-            </ColorScheme>
-        </ThemeProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <ThemeProvider theme={theme}>
+                <ColorScheme>
+                    <SafeAreaProvider>
+                        <SafeAreaView
+                            style={{
+                                flex: 1,
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <BottomSheetModalProvider>
+                                <MainScreen appStateVisible={appStateVisible} />
+                            </BottomSheetModalProvider>
+                        </SafeAreaView>
+                    </SafeAreaProvider>
+                </ColorScheme>
+            </ThemeProvider>
+        </GestureHandlerRootView>
     );
 }
-
-const styles = StyleSheet.create({
-    // container: {
-    //     flex: 1,
-    //     flexDirection: 'column',
-    //     backgroundColor: theme.colors.background,
-    // },
-});

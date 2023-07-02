@@ -10,10 +10,23 @@ export default createTheme({
     components: {
         Button: {
             radius: 10,
+            buttonStyle: {
+                borderWidth: 2,
+            },
         },
         Card: {
             containerStyle: {
                 borderRadius: 10,
+            },
+        },
+        BottomSheet: {
+            containerStyle: {
+                marginBottom: 20,
+            },
+        },
+        ListItem: {
+            containerStyle: {
+                padding: 20,
             },
         },
     },

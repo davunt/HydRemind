@@ -1,15 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const daysKey = '@days';
+// const daysKey = '@days';
 const timesKey = '@times';
 const intervalKey = '@intervals';
 
-export const saveNotificationConfig = async (days: [], times: [], interval: number) => {
+export const saveNotificationConfig = async (times: [], interval: number) => {
     try {
-        const daysArrayString = JSON.stringify(days);
+        // const daysArrayString = JSON.stringify(days);
         const timesArrayString = JSON.stringify(times);
         await Promise.all([
-            AsyncStorage.setItem(daysKey, daysArrayString),
+            // AsyncStorage.setItem(daysKey, daysArrayString),
             AsyncStorage.setItem(timesKey, timesArrayString),
             AsyncStorage.setItem(intervalKey, interval.toString()),
         ]);
@@ -20,17 +20,17 @@ export const saveNotificationConfig = async (days: [], times: [], interval: numb
 
 export const getNotificationConfig = async () => {
     try {
-        const daysArrayString: string = (await AsyncStorage.getItem(daysKey)) ?? '[]';
+        // const daysArrayString: string = (await AsyncStorage.getItem(daysKey)) ?? '[]';
         const timesArrayString: string = (await AsyncStorage.getItem(timesKey)) ?? '[]';
         const interval: string = (await AsyncStorage.getItem(intervalKey)) ?? '';
 
-        if (!daysArrayString || !timesArrayString || !interval) return false;
+        if (!timesArrayString || !interval) return false;
 
-        const days: [] = JSON.parse(daysArrayString);
+        // const days: [] = JSON.parse(daysArrayString);
         const times: [] = JSON.parse(timesArrayString);
 
         return {
-            days,
+            // days,
             times,
             interval: parseInt(interval),
         };
