@@ -54,7 +54,7 @@ export default function ReminderConfig({
 
                     <SelectBottomSheet
                         title={'How often do you want to be reminded?'}
-                        multiple
+                        multiple={false}
                         loading={loading}
                         initialSelected={[selectedIntervalIndex]}
                         onSave={(selectedOptions: number[]) =>

@@ -243,10 +243,7 @@ export default function App({ appStateVisible }: Props) {
             </View>
             <View
                 style={{
-                    // flex: 1,
                     backgroundColor: theme.colors.white,
-                    shadowOpacity: 0.1,
-                    shadowRadius: 5,
                 }}
             >
                 <Carousel

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import * as Haptics from 'expo-haptics';
 import { useTheme, Button, ListItem } from '@rneui/themed';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { Icon } from '@rneui/base';
 
 interface Props {
     title: string;
@@ -50,11 +51,15 @@ export default function TimeSlotCard({
         console.log(selectedIndex);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-        if (selected.indexOf(selectedIndex) > -1) {
-            const updatedSelectedList = selected.filter((o) => selectedIndex != o);
-            setSelected(updatedSelectedList);
+        if (multiple) {
+            if (selected.indexOf(selectedIndex) > -1) {
+                const updatedSelectedList = selected.filter((o) => selectedIndex != o);
+                setSelected(updatedSelectedList);
+            } else {
+                setSelected((prevState) => [...prevState, selectedIndex]);
+            }
         } else {
-            setSelected((prevState) => [...prevState, selectedIndex]);
+            setSelected([selectedIndex]);
         }
     };
 
@@ -85,6 +90,8 @@ export default function TimeSlotCard({
                 index={0}
                 snapPoints={bottomSheetSnapPoints}
                 onChange={handleSheetChanges}
+                handleStyle={{ backgroundColor: theme.colors.white }}
+                backgroundStyle={{ backgroundColor: theme.colors.white }}
             >
                 <ListItem
                     key={'title'}
@@ -104,10 +111,17 @@ export default function TimeSlotCard({
                         bottomDivider
                         containerStyle={{ backgroundColor: theme.colors.white }}
                     >
-                        {multiple && (
-                            <ListItem.CheckBox
-                                checked={selected.indexOf(option.value) > -1}
-                                disabled={false}
+                        {selected.indexOf(option.value) > -1 ? (
+                            <Icon
+                                name="checkmark-circle-outline"
+                                type="ionicon"
+                                color={theme.colors.black}
+                            />
+                        ) : (
+                            <Icon
+                                name="ellipse-outline"
+                                type="ionicon"
+                                color={theme.colors.black}
                             />
                         )}
                         <ListItem.Content>
