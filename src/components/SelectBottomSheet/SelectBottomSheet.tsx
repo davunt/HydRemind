@@ -115,7 +115,7 @@ export default function TimeSlotCard({
                             <Icon
                                 name="checkmark-circle-outline"
                                 type="ionicon"
-                                color={theme.colors.black}
+                                color={theme.colors.primary}
                             />
                         ) : (
                             <Icon

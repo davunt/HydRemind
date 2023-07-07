@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@rneui/themed';
-import BottomSheet from '@gorhom/bottom-sheet';
 import { FlatList, StyleSheet, Dimensions, View } from 'react-native';
 import { DateTime } from 'luxon';
 import * as Notifications from 'expo-notifications';
@@ -40,6 +39,7 @@ export default function App({ appStateVisible }: Props) {
         DateTime.now().startOf('day').plus({ hours: 22 })
     );
     const [timeSLots, setTimeSlots] = useState<string[]>([]);
+    const [upNextTime, setUpNextTime] = useState<string>();
 
     useEffect(() => {
         const getNotificationConfigFromStorage = async () => {
@@ -54,6 +54,18 @@ export default function App({ appStateVisible }: Props) {
                     setSelectedHourRepeat(configObject.interval);
                     setSelectedActiveStartTime(DateTime.fromFormat(startTime, 'hh:mm'));
                     setSelectedActiveEndTime(DateTime.fromFormat(endTime, 'hh:mm'));
+
+                    const upNext = configObject.times.find((time) => {
+                        const now = DateTime.now();
+                        const notificationTime = DateTime.fromFormat(time, 'hh:mm');
+                        const diff = notificationTime.diff(now);
+                        if (diff.as('milliseconds') > 0) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    console.log(upNext);
+                    setUpNextTime(upNext);
                 }
                 setTimesLoading(false);
             } catch (err) {
@@ -135,7 +147,6 @@ export default function App({ appStateVisible }: Props) {
             ]);
 
             const scheduleNotificationPromises: Promise<string[]> = [];
-            console.log('here');
 
             const days = [1, 2, 3, 4, 5, 6, 7];
 
@@ -159,11 +170,12 @@ export default function App({ appStateVisible }: Props) {
         }
     };
 
-    const timeSlotComp = (item) => (
+    const timeSlotComp = (item: string) => (
         <TimeSlotCard
             time={item}
             key={item}
             completed={todaysHydrationSig.value[item] || false}
+            upNext={upNextTime === item}
             addHydrationStat={(time) => addHydrationStat(time)}
             removeHydrationStat={(time) => removeHydrationStat(time)}
         />
@@ -200,7 +212,6 @@ export default function App({ appStateVisible }: Props) {
                 flexGrow: 3,
                 flex: 3,
                 padding: 10,
-                // backgroundColor: 'red',
                 justifyContent: 'center',
                 alignItems: 'center',
             }}
@@ -215,11 +226,37 @@ export default function App({ appStateVisible }: Props) {
 
     const carouselPages = [reminderConfigComp];
 
+    const getPercentCompleteText = () => {
+        return `${Math.round(
+            (Object.keys(todaysHydrationSig.value).length / timeSLots.length) * 100
+        )}% Completed`;
+    };
+
     return (
-        <View style={styles.container}>
-            <Text h1 h1Style={{ fontWeight: 'bold' }} style={{ padding: 10 }}>
-                {DateTime.local().toLocaleString({ weekday: 'long' })}
-            </Text>
+        <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View>
+                    <Text
+                        h1
+                        h1Style={{ fontWeight: 'bold' }}
+                        style={{ padding: 10, paddingBottom: 0 }}
+                    >
+                        {DateTime.local().toLocaleString({
+                            weekday: 'long',
+                        })}
+                    </Text>
+                    <Text
+                        style={{
+                            paddingHorizontal: 10,
+                            paddingBottom: 10,
+                            fontWeight: '300',
+                            color: theme.colors.primary,
+                        }}
+                    >
+                        {getPercentCompleteText()}
+                    </Text>
+                </View>
+            </View>
             <View style={{ flex: 2 }}>
                 {timesLoading ? (
                     <View style={{ marginHorizontal: 15 }}>
@@ -233,7 +270,7 @@ export default function App({ appStateVisible }: Props) {
                 ) : (
                     <FlatList
                         numColumns={2}
-                        contentContainerStyle={{ flexGrow: 1 }}
+                        contentContainerStyle={{ flexGrow: 1, marginHorizontal: 10 }}
                         data={timeSLots}
                         renderItem={({ item }) => timeSlotComp(item)}
                         keyExtractor={(item) => `timeSlot${item}`}
@@ -259,10 +296,3 @@ export default function App({ appStateVisible }: Props) {
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        // flexDirection: 'column',
-    },
-});

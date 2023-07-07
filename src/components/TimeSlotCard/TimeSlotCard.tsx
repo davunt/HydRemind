@@ -7,12 +7,14 @@ import { useTheme, Card, Text, Icon, Button } from '@rneui/themed';
 interface Props {
     time: string;
     completed: boolean;
-    addHydrationStat: (time: string) => null;
-    removeHydrationStat: (time: string) => null;
+    upNext: boolean;
+    addHydrationStat: (time: string) => Promise<void>;
+    removeHydrationStat: (time: string) => Promise<void>;
 }
 
 export default function TimeSlotCard({
     time,
+    upNext,
     completed,
     addHydrationStat,
     removeHydrationStat,
@@ -21,8 +23,6 @@ export default function TimeSlotCard({
 
     const [tempCompleted, setTempCompleted] = useState(completed);
     const [relativeTime, setRelativeTime] = useState('');
-
-    console.log(time, completed);
 
     useEffect(() => {
         setTempCompleted(completed);
@@ -46,13 +46,13 @@ export default function TimeSlotCard({
         if (tempCompleted) {
             return `Completed`;
         } else if (minutesFrom < 0 && minutesFrom > -60) {
-            return `${Math.round(minutesFrom)} minutes ago`;
+            return `${Math.abs(Math.round(minutesFrom))} minutes ago`;
         } else if (minutesFrom < -60) {
-            return `${Math.round(hoursFrom)} hour(s) ago`;
+            return `${Math.abs(Math.round(hoursFrom))} hours ago`;
         } else if (minutesFrom < 60) {
             return `In ${Math.round(minutesFrom)} minutes`;
         } else {
-            return `In ~${Math.round(hoursFrom)} hour(s)`;
+            return `In ${Math.round(hoursFrom)} hours`;
         }
     };
 
@@ -64,6 +64,8 @@ export default function TimeSlotCard({
             return <Icon name="checkmark-circle-outline" type="ionicon" />;
         } else if (timeCardTime < currentTime) {
             return <Icon name="ellipse-outline" type="ionicon" />;
+        } else if (upNext) {
+            return <Icon name="alarm-outline" type="ionicon" />;
         }
 
         return <></>;
@@ -88,6 +90,9 @@ export default function TimeSlotCard({
                     flex: 1,
                     minHeight: 100,
                     backgroundColor: tempCompleted ? theme.colors.primary : theme.colors.white,
+                    margin: 5,
+                    marginBottom: 5,
+                    ...(upNext ? { borderColor: theme.colors.primary, borderWidth: 2 } : {}),
                 }}
             >
                 <View
@@ -116,7 +121,8 @@ export default function TimeSlotCard({
                     </View>
                 </View>
                 <>
-                    <Text>{relativeTime}</Text>
+                    {upNext && <Text style={{ fontWeight: '200' }}>Next up</Text>}
+                    <Text style={{ fontWeight: '200' }}>{relativeTime}</Text>
                 </>
             </Card>
         </Pressable>
