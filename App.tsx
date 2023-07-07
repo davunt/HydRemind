@@ -5,7 +5,7 @@ import { Platform, AppState, View, useColorScheme } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 import theme from './theme';
 
@@ -13,17 +13,16 @@ import MainScreen from './src/screens/main/main';
 
 import { addHydrationStat } from './storage/dailyHydration';
 
-interface ColorSchemeProps {
+interface WrapperProps {
     children: ReactElement;
 }
 
-const ColorScheme = ({ children }: ColorSchemeProps) => {
+const ColorScheme = ({ children }: WrapperProps) => {
     const colorMode = useColorScheme() || 'light';
     const { theme } = useTheme();
     const { setMode } = useThemeMode();
 
     React.useEffect(() => {
-        console.log(colorMode);
         setMode(colorMode);
     }, [colorMode]);
 
@@ -37,6 +36,28 @@ const ColorScheme = ({ children }: ColorSchemeProps) => {
         >
             {children}
         </View>
+    );
+};
+
+const SafeAreaWrapper = ({ children }: WrapperProps) => {
+    const { theme } = useTheme();
+
+    return (
+        <>
+            <SafeAreaView
+                style={{
+                    flex: 1,
+                    flexDirection: 'column',
+                }}
+                edges={['top', 'left', 'right']}
+            >
+                {children}
+            </SafeAreaView>
+            <SafeAreaView
+                edges={['bottom']}
+                style={{ flex: 0, backgroundColor: theme.colors.white }}
+            ></SafeAreaView>
+        </>
     );
 };
 
@@ -120,16 +141,11 @@ export default function App() {
             <ThemeProvider theme={theme}>
                 <ColorScheme>
                     <SafeAreaProvider>
-                        <SafeAreaView
-                            style={{
-                                flex: 1,
-                                flexDirection: 'column',
-                            }}
-                        >
+                        <SafeAreaWrapper>
                             <BottomSheetModalProvider>
                                 <MainScreen appStateVisible={appStateVisible} />
                             </BottomSheetModalProvider>
-                        </SafeAreaView>
+                        </SafeAreaWrapper>
                     </SafeAreaProvider>
                 </ColorScheme>
             </ThemeProvider>
