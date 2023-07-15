@@ -26,6 +26,8 @@ export default function ReminderConfig({
         useState<number>(initialIntervalIndex);
     const [selectedStartTime, setSelectedStartTime] = useState<DateTime>(initialStartTime);
     const [selectedEndTime, setSelectedEndTime] = useState<DateTime>(initialEndTime);
+    const [timeStartOptions, setStartTimeOptions] = useState<string[]>();
+    const [timeEndOptions, setEndTimeOptions] = useState<string[]>();
 
     const hourOptions = [
         { label: 'Every hour', fullLabel: 'Every hour', value: 1 },
@@ -34,20 +36,51 @@ export default function ReminderConfig({
         { label: 'Every 4 hours', fullLabel: 'Every 4 hours', value: 4 },
     ];
 
+    const getEndTimeOptions = (startTimeOptions) => {
+        if (startTimeOptions) {
+            const timeOptions = startTimeOptions.filter((option) => {
+                if (option.value > selectedStartTime) {
+                    const diff =
+                        parseInt(option.value.split(':')[0]) -
+                        parseInt(selectedStartTime.split(':')[0]);
+                    return diff % 2 === 0;
+                }
+            });
+            setEndTimeOptions(timeOptions);
+        }
+    };
+
     useEffect(() => {
+        const getStartTimeOptions = () => {
+            const timeOptions = [];
+            for (let i = 0; i < 24; i++) {
+                timeOptions.push({
+                    label: `${String(i).padStart(2, '0')}:00`,
+                    fullLabel: `${String(i).padStart(2, '0')}:00`,
+                    value: `${String(i).padStart(2, '0')}:00`,
+                });
+            }
+            setStartTimeOptions(timeOptions);
+            getEndTimeOptions(timeOptions);
+        };
+
+        getStartTimeOptions();
         setSelectedIntervalIndex(initialIntervalIndex);
         setSelectedStartTime(initialStartTime);
         setSelectedEndTime(initialEndTime);
     }, [initialIntervalIndex, initialStartTime, initialEndTime]);
 
+    useEffect(() => {
+        if (timeStartOptions) getEndTimeOptions(timeStartOptions);
+    }, [selectedStartTime]);
+
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, maxHeight: 800 }}>
             <View style={styles.container}>
                 <View
                     style={{
                         marginVertical: 10,
                         flexDirection: 'row',
-                        justifyContent: 'space-between',
                     }}
                 >
                     <Text style={{ marginRight: 5, alignSelf: 'center' }}>Remind me</Text>
@@ -64,25 +97,28 @@ export default function ReminderConfig({
                     />
                 </View>
                 <View style={{ marginVertical: 10 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row' }}>
                         <Text style={{ alignSelf: 'center' }}>Between</Text>
-                        <DateTimePicker
-                            id="startDate"
-                            value={selectedStartTime.toJSDate()}
-                            mode="time"
-                            minuteInterval={30}
-                            onChange={(e, timestamp) =>
-                                setSelectedStartTime(DateTime.fromJSDate(timestamp!))
+                        <SelectBottomSheet
+                            title={'First reminder'}
+                            multiple={false}
+                            loading={loading}
+                            initialSelected={[selectedStartTime]}
+                            onSave={(selectedOptions: number[]) =>
+                                setSelectedStartTime(selectedOptions[0])
                             }
+                            options={timeStartOptions}
                         />
-                        <Text style={{ marginLeft: 10, alignSelf: 'center' }}>and</Text>
-                        <DateTimePicker
-                            value={selectedEndTime.toJSDate()}
-                            onChange={(e, timestamp) =>
-                                setSelectedEndTime(DateTime.fromJSDate(timestamp!))
-                            }
-                            mode="time"
-                            minuteInterval={30}
+                        <SelectBottomSheet
+                            title={'Last reminder'}
+                            multiple={false}
+                            loading={loading}
+                            initialSelected={[selectedEndTime]}
+                            onSave={(selectedOptions: number[]) => {
+                                console.log('++++', selectedOptions);
+                                setSelectedEndTime(selectedOptions[0]);
+                            }}
+                            options={timeEndOptions}
                         />
                     </View>
                 </View>
@@ -92,6 +128,7 @@ export default function ReminderConfig({
                         loading={loading}
                         onPress={() => {
                             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            console.log(selectedIntervalIndex, selectedStartTime, selectedEndTime);
                             handleNotificationCreation(
                                 selectedIntervalIndex,
                                 selectedStartTime,

@@ -32,12 +32,8 @@ export default function App({ appStateVisible }: Props) {
 
     const [timesLoading, setTimesLoading] = useState<boolean>(true);
     const [selectedHourRepeat, setSelectedHourRepeat] = useState<number>(1);
-    const [selectedActiveStartTime, setSelectedActiveStartTime] = useState<DateTime>(
-        DateTime.now().startOf('day').plus({ hours: 8 })
-    );
-    const [selectedActiveEndTime, setSelectedActiveEndTime] = useState<DateTime>(
-        DateTime.now().startOf('day').plus({ hours: 22 })
-    );
+    const [selectedActiveStartTime, setSelectedActiveStartTime] = useState<string>('08:00');
+    const [selectedActiveEndTime, setSelectedActiveEndTime] = useState<string>('22:00');
     const [timeSLots, setTimeSlots] = useState<string[]>([]);
     const [upNextTime, setUpNextTime] = useState<string>();
 
@@ -52,8 +48,8 @@ export default function App({ appStateVisible }: Props) {
 
                     setTimeSlots(configObject.times);
                     setSelectedHourRepeat(configObject.interval);
-                    setSelectedActiveStartTime(DateTime.fromFormat(startTime, 'hh:mm'));
-                    setSelectedActiveEndTime(DateTime.fromFormat(endTime, 'hh:mm'));
+                    setSelectedActiveStartTime(startTime);
+                    setSelectedActiveEndTime(endTime);
 
                     const upNext = configObject.times.find((time) => {
                         const now = DateTime.now();
@@ -86,13 +82,13 @@ export default function App({ appStateVisible }: Props) {
     }, [appStateVisible]);
 
     const calculateNotficationTimes = (
-        startTime: DateTime,
-        endTime: DateTime,
+        startTime: string,
+        endTime: string,
         incrementHour: number
     ): string[] => {
         const notificationTimes = [];
-        let lastSetTime = startTime;
-        while (lastSetTime <= endTime) {
+        let lastSetTime = DateTime.fromFormat(startTime, 'hh:mm');
+        while (lastSetTime <= DateTime.fromFormat(endTime, 'hh:mm')) {
             notificationTimes.push(lastSetTime.toLocaleString(DateTime.TIME_24_SIMPLE));
             lastSetTime = lastSetTime.plus({ hours: incrementHour });
         }
@@ -122,8 +118,8 @@ export default function App({ appStateVisible }: Props) {
 
     const handleNotificationCreation = async (
         selectedHourRepeatq: number,
-        selectedActiveStartTimeq: DateTime,
-        selectedActiveEndTimeq: DateTime
+        selectedActiveStartTimeq: string,
+        selectedActiveEndTimeq: string
     ) => {
         try {
             setTimesLoading(true);
@@ -227,9 +223,12 @@ export default function App({ appStateVisible }: Props) {
     const carouselPages = [reminderConfigComp];
 
     const getPercentCompleteText = () => {
-        return `${Math.round(
+        const percValue = Math.round(
             (Object.keys(todaysHydrationSig.value).length / timeSLots.length) * 100
-        )}% Completed`;
+        );
+        console.log(isNaN(percValue));
+        if (isNaN(percValue)) return '';
+        else return `${percValue}% Completed`;
     };
 
     return (

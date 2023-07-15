@@ -2,6 +2,7 @@ import { createTheme } from '@rneui/themed';
 
 export default createTheme({
     lightColors: {
+        primary: '#438eff',
         background: '#FAF9F6',
     },
     darkColors: {
