@@ -63,3 +63,12 @@ export const getTodaysHydration = async () => {
         console.error(err);
     }
 };
+
+export const clearTodaysHydrationStats = async () => {
+    try {
+        await AsyncStorage.removeItem(`${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`);
+        todaysHydrationSig.value = {};
+    } catch (err) {
+        console.error(err);
+    }
+};

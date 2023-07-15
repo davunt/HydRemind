@@ -14,6 +14,7 @@ import {
     getTodaysHydration,
     addHydrationStat,
     removeHydrationStat,
+    clearTodaysHydrationStats,
     todaysHydrationSig,
 } from '../../../storage/dailyHydration';
 
@@ -123,15 +124,17 @@ export default function App({ appStateVisible }: Props) {
     ) => {
         try {
             setTimesLoading(true);
-            await Notifications.cancelAllScheduledNotificationsAsync();
+            await Promise.all([
+                Notifications.cancelAllScheduledNotificationsAsync(),
+                Notifications.setNotificationCategoryAsync('WaterReminder', []),
+                clearTodaysHydrationStats(),
+            ]);
 
             const notificationTimes = calculateNotficationTimes(
                 selectedActiveStartTimeq,
                 selectedActiveEndTimeq,
                 selectedHourRepeatq
             );
-
-            await Notifications.setNotificationCategoryAsync('WaterReminder', []);
 
             const scheduleNotificationPromises: Promise<string[]> = [];
 
@@ -149,7 +152,6 @@ export default function App({ appStateVisible }: Props) {
             setSelectedActiveStartTime(selectedActiveStartTimeq);
             setSelectedActiveEndTime(selectedActiveEndTimeq);
             setTimeSlots(notificationTimes);
-            console.log(resp);
             setTimesLoading(false);
         } catch (err) {
             setTimesLoading(false);
@@ -183,12 +185,17 @@ export default function App({ appStateVisible }: Props) {
             <Text>Hello</Text>
             <Button
                 title="Set Notication Test"
-                onPress={async () =>
-                    await scheduleNotifications(
-                        5,
-                        DateTime.now().plus({ minute: 1 }).toLocaleString(DateTime.TIME_24_SIMPLE)
-                    )
-                }
+                onPress={async () => {
+                    await Notifications.scheduleNotificationAsync({
+                        content: {
+                            title: "Time's up!",
+                            body: 'Change sides!',
+                        },
+                        trigger: {
+                            seconds: 10,
+                        },
+                    });
+                }}
             ></Button>
         </View>
     );
