@@ -106,6 +106,7 @@ export default function App() {
         const subscription = AppState.addEventListener('change', (nextAppState) => {
             if (nextAppState === 'active') {
                 setAppStateVisible(true);
+                Notifications.dismissAllNotificationsAsync();
             }
 
             if (nextAppState === 'background') {
