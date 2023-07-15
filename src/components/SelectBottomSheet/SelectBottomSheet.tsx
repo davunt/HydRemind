@@ -3,13 +3,14 @@ import * as Haptics from 'expo-haptics';
 import { useTheme, Button, ListItem } from '@rneui/themed';
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Icon } from '@rneui/base';
-import { ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 
 interface Props {
     title: string;
     initialSelected: number[];
     multiple: boolean;
     loading: boolean;
+    error: string | undefined;
     onSave: (selectedOptions: number[]) => void;
     options: {
         label: string;
@@ -31,6 +32,7 @@ export default function TimeSlotCard({
     loading,
     onSave,
     options,
+    error,
 }: Props) {
     const { theme } = useTheme();
 
@@ -91,24 +93,31 @@ export default function TimeSlotCard({
                 .map((option: Option) => option.label);
             console.log('lab', selectedLabels);
             if (selectedLabels.length > 0) return selectedLabels.join(', ');
-            else {
-                return '...';
-            }
+            else return '...';
         }
     };
 
     return (
-        <>
-            <Button
-                type="outline"
-                onPress={() => {
-                    bottomSheetModalRef.current?.present();
-                }}
-                loading={loading}
-                containerStyle={{ flex: 1, marginHorizontal: 5 }}
-            >
-                {getSelectedLabels()}
-            </Button>
+        <View style={{ flex: 1 }}>
+            <View style={{ flexGrow: 1 }}>
+                <Button
+                    type="outline"
+                    onPress={() => {
+                        bottomSheetModalRef.current?.present();
+                    }}
+                    loading={loading}
+                    buttonStyle={{
+                        borderColor: error ? theme.colors.error : theme.colors.primary,
+                    }}
+                    titleStyle={{ color: error ? theme.colors.error : theme.colors.primary }}
+                    containerStyle={{
+                        flexGrow: 1,
+                        marginHorizontal: 5,
+                    }}
+                >
+                    {getSelectedLabels()}
+                </Button>
+            </View>
             <BottomSheetModal
                 ref={bottomSheetModalRef}
                 enablePanDownToClose={true}
@@ -159,6 +168,6 @@ export default function TimeSlotCard({
                         ))}
                 </BottomSheetScrollView>
             </BottomSheetModal>
-        </>
+        </View>
     );
 }

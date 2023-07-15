@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { DateTime } from 'luxon';
+import { Formik } from 'formik';
 import * as Haptics from 'expo-haptics';
 import { Text, Button } from '@rneui/themed';
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 import SelectBottomSheet from '../SelectBottomSheet/SelectBottomSheet';
 
 interface Props {
     loading: boolean;
-    handleNotificationCreation: (a: number, b: DateTime, c: DateTime) => {};
+    handleNotificationCreation: (a: number, b: string, c: string) => {};
     initialIntervalIndex: number;
-    initialStartTime: DateTime;
-    initialEndTime: DateTime;
+    initialStartTime: string;
+    initialEndTime: string;
 }
 
 export default function ReminderConfig({
@@ -22,10 +21,6 @@ export default function ReminderConfig({
     initialStartTime,
     initialEndTime,
 }: Props) {
-    const [selectedIntervalIndex, setSelectedIntervalIndex] =
-        useState<number>(initialIntervalIndex);
-    const [selectedStartTime, setSelectedStartTime] = useState<DateTime>(initialStartTime);
-    const [selectedEndTime, setSelectedEndTime] = useState<DateTime>(initialEndTime);
     const [timeStartOptions, setStartTimeOptions] = useState<string[]>();
     const [timeEndOptions, setEndTimeOptions] = useState<string[]>();
 
@@ -36,18 +31,23 @@ export default function ReminderConfig({
         { label: 'Every 4 hours', fullLabel: 'Every 4 hours', value: 4 },
     ];
 
-    const getEndTimeOptions = (startTimeOptions) => {
-        if (startTimeOptions) {
-            const timeOptions = startTimeOptions.filter((option) => {
-                if (option.value > selectedStartTime) {
-                    const diff =
-                        parseInt(option.value.split(':')[0]) -
-                        parseInt(selectedStartTime.split(':')[0]);
-                    return diff % 2 === 0;
-                }
+    const getEndTimeOptions = (startTime: string, timeInterval: number) => {
+        const startHour = parseInt(startTime.split(':')[0]);
+        let lastTime = startHour;
+
+        const timeOptions = [];
+
+        while (lastTime >= startHour) {
+            lastTime = (lastTime + timeInterval) % 24;
+            if (lastTime < startHour) break;
+            timeOptions.push({
+                label: `${String(lastTime).padStart(2, '0')}:00`,
+                fullLabel: `${String(lastTime).padStart(2, '0')}:00`,
+                value: `${String(lastTime).padStart(2, '0')}:00`,
             });
-            setEndTimeOptions(timeOptions);
         }
+
+        setEndTimeOptions(timeOptions);
     };
 
     useEffect(() => {
@@ -61,83 +61,101 @@ export default function ReminderConfig({
                 });
             }
             setStartTimeOptions(timeOptions);
-            getEndTimeOptions(timeOptions);
         };
 
         getStartTimeOptions();
-        setSelectedIntervalIndex(initialIntervalIndex);
-        setSelectedStartTime(initialStartTime);
-        setSelectedEndTime(initialEndTime);
+        getEndTimeOptions(initialStartTime, initialIntervalIndex);
     }, [initialIntervalIndex, initialStartTime, initialEndTime]);
 
-    useEffect(() => {
-        if (timeStartOptions) getEndTimeOptions(timeStartOptions);
-    }, [selectedStartTime]);
-
     return (
-        <View style={{ flex: 1, maxHeight: 800 }}>
-            <View style={styles.container}>
-                <View
-                    style={{
-                        marginVertical: 10,
-                        flexDirection: 'row',
-                    }}
-                >
-                    <Text style={{ marginRight: 5, alignSelf: 'center' }}>Remind me</Text>
-
-                    <SelectBottomSheet
-                        title={'How often do you want to be reminded?'}
-                        multiple={false}
-                        loading={loading}
-                        initialSelected={[selectedIntervalIndex]}
-                        onSave={(selectedOptions: number[]) =>
-                            setSelectedIntervalIndex(selectedOptions[0])
-                        }
-                        options={hourOptions}
-                    />
-                </View>
-                <View style={{ marginVertical: 10 }}>
-                    <View style={{ flexDirection: 'row' }}>
-                        <Text style={{ alignSelf: 'center' }}>Between</Text>
-                        <SelectBottomSheet
-                            title={'First reminder'}
-                            multiple={false}
-                            loading={loading}
-                            initialSelected={[selectedStartTime]}
-                            onSave={(selectedOptions: number[]) =>
-                                setSelectedStartTime(selectedOptions[0])
-                            }
-                            options={timeStartOptions}
-                        />
-                        <SelectBottomSheet
-                            title={'Last reminder'}
-                            multiple={false}
-                            loading={loading}
-                            initialSelected={[selectedEndTime]}
-                            onSave={(selectedOptions: number[]) => {
-                                console.log('++++', selectedOptions);
-                                setSelectedEndTime(selectedOptions[0]);
+        <View style={{ flex: 1 }}>
+            <Formik
+                enableReinitialize
+                initialValues={{
+                    intervalValue: initialIntervalIndex,
+                    startTime: initialStartTime,
+                    endTime: initialEndTime,
+                }}
+                onSubmit={(values) => {
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    handleNotificationCreation(
+                        values.intervalValue,
+                        values.startTime,
+                        values.endTime
+                    );
+                }}
+                validate={(values) => {
+                    const errors = {};
+                    const endHour = parseInt(values.endTime.split(':')[0]);
+                    const startHour = parseInt(values.startTime.split(':')[0]);
+                    if ((endHour - startHour) % values.intervalValue !== 0) {
+                        errors.endTime = true;
+                    }
+                    return errors;
+                }}
+            >
+                {({ setFieldValue, handleSubmit, values, errors }) => (
+                    <View style={styles.container}>
+                        <View
+                            style={{
+                                marginVertical: 10,
+                                flexDirection: 'row',
                             }}
-                            options={timeEndOptions}
-                        />
+                        >
+                            <Text style={{ marginRight: 5, alignSelf: 'center' }}>Remind me</Text>
+
+                            <SelectBottomSheet
+                                title={'How often do you want to be reminded?'}
+                                multiple={false}
+                                loading={loading}
+                                error={errors.intervalValue}
+                                initialSelected={[values.intervalValue]}
+                                onSave={(selectedOptions: number[]) => {
+                                    setFieldValue('intervalValue', selectedOptions[0]);
+                                    getEndTimeOptions(values.startTime, selectedOptions[0]);
+                                }}
+                                options={hourOptions}
+                            />
+                        </View>
+                        <View style={{ marginVertical: 10 }}>
+                            <View style={{ flexDirection: 'row' }}>
+                                <Text style={{ alignSelf: 'center' }}>Between</Text>
+                                <SelectBottomSheet
+                                    title={'First reminder'}
+                                    multiple={false}
+                                    loading={loading}
+                                    error={errors.startTime}
+                                    initialSelected={[values.startTime]}
+                                    onSave={(selectedOptions: number[]) => {
+                                        setFieldValue('startTime', selectedOptions[0]);
+                                        getEndTimeOptions(selectedOptions[0], values.intervalValue);
+                                    }}
+                                    options={timeStartOptions}
+                                />
+                                <SelectBottomSheet
+                                    title={'Last reminder'}
+                                    multiple={false}
+                                    loading={loading}
+                                    error={errors.endTime}
+                                    options={timeEndOptions}
+                                    initialSelected={[values.endTime]}
+                                    onSave={(selectedOptions: number[]) => {
+                                        setFieldValue('endTime', selectedOptions[0]);
+                                    }}
+                                />
+                            </View>
+                        </View>
+                        <View style={{ marginVertical: 10, width: '100%' }}>
+                            <Button
+                                title="Save"
+                                loading={loading}
+                                disabled={Object.keys(errors).length > 0}
+                                onPress={() => handleSubmit()}
+                            />
+                        </View>
                     </View>
-                </View>
-                <View style={{ marginVertical: 10, width: '100%' }}>
-                    <Button
-                        title="Save"
-                        loading={loading}
-                        onPress={() => {
-                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                            console.log(selectedIntervalIndex, selectedStartTime, selectedEndTime);
-                            handleNotificationCreation(
-                                selectedIntervalIndex,
-                                selectedStartTime,
-                                selectedEndTime
-                            );
-                        }}
-                    />
-                </View>
-            </View>
+                )}
+            </Formik>
         </View>
     );
 }

@@ -14,6 +14,10 @@ export default createTheme({
             buttonStyle: {
                 borderWidth: 2,
             },
+            disabledStyle: {
+                borderColor: 'grey',
+                borderWidth: 0,
+            },
         },
         Card: {
             containerStyle: {

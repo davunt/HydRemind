@@ -131,16 +131,7 @@ export default function App({ appStateVisible }: Props) {
                 selectedHourRepeatq
             );
 
-            await Notifications.setNotificationCategoryAsync('WaterReminder', [
-                {
-                    buttonTitle: "I've Hydrated!",
-                    identifier: 'hydrated',
-                },
-                {
-                    buttonTitle: 'Snooze',
-                    identifier: 'snooze',
-                },
-            ]);
+            await Notifications.setNotificationCategoryAsync('WaterReminder', []);
 
             const scheduleNotificationPromises: Promise<string[]> = [];
 
