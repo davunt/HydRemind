@@ -6,69 +6,71 @@ const hydrationKeyPrefix = '@hydration-';
 
 export const todaysHydrationSig = signal({});
 
-export const addHydrationStat = async (time: string) => {
-    try {
-        let todaysHydration: {} = (await getTodaysHydration()) || {};
-        if (Object.keys(todaysHydration).length < 1) {
-            await AsyncStorage.setItem(
-                `${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`,
-                JSON.stringify({
-                    [time]: true,
-                })
-            );
-        } else {
-            await AsyncStorage.mergeItem(
-                `${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`,
-                JSON.stringify({
-                    [time]: true,
-                })
-            );
-        }
-        todaysHydration = (await getTodaysHydration()) || {};
+export const getTodaysHydration = async (): Promise<object> => {
+  try {
+    const todaysHydrationArrayString: string =
+      (await AsyncStorage.getItem(`${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`)) ??
+      '{}';
 
-        todaysHydrationSig.value = todaysHydration;
-    } catch (err) {
-        console.error(err);
-    }
+    const todaysHydration: object = JSON.parse(todaysHydrationArrayString);
+    todaysHydrationSig.value = todaysHydration;
+
+    return todaysHydration;
+  } catch (err) {
+    console.error(err);
+    return {};
+  }
 };
 
-export const removeHydrationStat = async (time: string) => {
-    try {
-        let todaysHydration: {} = (await getTodaysHydration()) || {};
-        delete todaysHydration[time];
+export const addHydrationStat = async (time: string): Promise<undefined> => {
+  try {
+    let todaysHydration: object = await getTodaysHydration();
 
-        await AsyncStorage.setItem(
-            `${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`,
-            JSON.stringify(todaysHydration)
-        );
-
-        todaysHydrationSig.value = { ...todaysHydration };
-    } catch (err) {
-        console.error(err);
+    if (Object.keys(todaysHydration).length < 1) {
+      await AsyncStorage.setItem(
+        `${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`,
+        JSON.stringify({
+          [time]: true,
+        })
+      );
+    } else {
+      await AsyncStorage.mergeItem(
+        `${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`,
+        JSON.stringify({
+          [time]: true,
+        })
+      );
     }
+    todaysHydration = await getTodaysHydration();
+
+    todaysHydrationSig.value = todaysHydration;
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-export const getTodaysHydration = async () => {
-    try {
-        const todaysHydrationArrayString: string =
-            (await AsyncStorage.getItem(
-                `${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`
-            )) ?? '{}';
+export const removeHydrationStat = async (time: string): Promise<undefined> => {
+  try {
+    const todaysHydration: Record<string, any> = await getTodaysHydration();
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete todaysHydration[time];
 
-        const todaysHydration: {} = JSON.parse(todaysHydrationArrayString);
-        todaysHydrationSig.value = todaysHydration;
+    await AsyncStorage.setItem(
+      `${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`,
+      JSON.stringify(todaysHydration)
+    );
 
-        return todaysHydration;
-    } catch (err) {
-        console.error(err);
-    }
+    todaysHydrationSig.value = { ...todaysHydration };
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-export const clearTodaysHydrationStats = async () => {
-    try {
-        await AsyncStorage.removeItem(`${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`);
-        todaysHydrationSig.value = {};
-    } catch (err) {
-        console.error(err);
-    }
+export const clearTodaysHydrationStats = async (): Promise<undefined> => {
+  try {
+    await AsyncStorage.removeItem(`${hydrationKeyPrefix}${DateTime.now().toLocaleString()}`);
+    todaysHydrationSig.value = {};
+  } catch (err) {
+    console.error(err);
+  }
 };
