@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme, Skeleton, Text, Button, Icon } from '@rneui/themed';
-import { FlatList, StyleSheet, Dimensions, View } from 'react-native';
+import { FlatList, Dimensions, View } from 'react-native';
+import CircularProgress from 'react-native-circular-progress-indicator';
 import { DateTime } from 'luxon';
 import * as Notifications from 'expo-notifications';
 import Carousel from 'react-native-reanimated-carousel';
@@ -26,7 +27,7 @@ interface notificationConfigType {
   times: string[];
 }
 
-export default function App({ appStateVisible }: Props) {
+export default function App({ appStateVisible }: Props): React.ReactElement {
   const { theme } = useTheme();
   const width = Dimensions.get('window').width;
 
@@ -224,13 +225,13 @@ export default function App({ appStateVisible }: Props) {
 
   const carouselPages = [reminderConfigComp];
 
-  const getPercentCompleteText = () => {
+  const getPercentComplete = (): number => {
     const percValue = Math.round(
       (Object.keys(todaysHydrationSig.value).length / timeSLots.length) * 100
     );
     console.log(isNaN(percValue));
-    if (isNaN(percValue)) return '';
-    else return `${percValue}% Completed`;
+    if (isNaN(percValue)) return 0;
+    else return percValue;
   };
 
   return (
@@ -242,16 +243,15 @@ export default function App({ appStateVisible }: Props) {
               weekday: 'long',
             })}
           </Text>
-          <Text
-            style={{
-              paddingHorizontal: 10,
-              paddingBottom: 10,
-              fontWeight: '300',
-              color: theme.colors.primary,
-            }}
-          >
-            {getPercentCompleteText()}
-          </Text>
+        </View>
+        <View style={{ padding: 10, paddingBottom: 0 }}>
+          <CircularProgress
+            value={getPercentComplete()}
+            radius={25}
+            progressValueColor={theme.colors.primary}
+            activeStrokeColor={theme.colors.primary}
+            maxValue={100}
+          />
         </View>
       </View>
       <View style={{ flex: 2 }}>
