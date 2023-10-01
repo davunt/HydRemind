@@ -125,7 +125,9 @@ export default function TimeSlotCard({
           </View>
         </View>
         <>
-          {upNext && <Text style={{ fontWeight: '200' }}>Next up</Text>}
+          {upNext && (
+            <Text style={{ fontWeight: '200', color: theme.colors.primary }}>Next up</Text>
+          )}
           <Text style={{ fontWeight: '200' }}>{relativeTime}</Text>
         </>
       </Card>

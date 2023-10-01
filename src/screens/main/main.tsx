@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useTheme, Skeleton, Text, Button, Icon } from '@rneui/themed';
-import { FlatList, Dimensions, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useTheme, Text, Button, Icon } from '@rneui/themed';
+import { FlatList, Dimensions, View, ActivityIndicator } from 'react-native';
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { DateTime } from 'luxon';
 import * as Notifications from 'expo-notifications';
@@ -122,7 +123,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     selectedHourRepeatq: number,
     selectedActiveStartTimeq: string,
     selectedActiveEndTimeq: string
-  ) => {
+  ): Promise<undefined> => {
     try {
       setTimesLoading(true);
       await Promise.all([
@@ -147,8 +148,8 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
         });
       });
 
-      const resp = await Promise.all(scheduleNotificationPromises);
-      saveNotificationConfig(notificationTimes, selectedHourRepeatq);
+      await Promise.all(scheduleNotificationPromises);
+      await saveNotificationConfig(notificationTimes, selectedHourRepeatq);
       setSelectedHourRepeat(selectedHourRepeatq);
       setSelectedActiveStartTime(selectedActiveStartTimeq);
       setSelectedActiveEndTime(selectedActiveEndTimeq);
@@ -234,6 +235,12 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     else return percValue;
   };
 
+  const handleDayComplete = async (): Promise<undefined> => {
+    if (getPercentComplete() >= 100) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -251,15 +258,21 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
             progressValueColor={theme.colors.primary}
             activeStrokeColor={theme.colors.primary}
             maxValue={100}
+            valueSuffix={'%'}
+            inActiveStrokeOpacity={0.3}
+            inActiveStrokeWidth={8}
+            activeStrokeWidth={8}
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            onAnimationComplete={async () => {
+              await handleDayComplete();
+            }}
           />
         </View>
       </View>
       <View style={{ flex: 2 }}>
         {timesLoading ? (
           <View style={{ marginHorizontal: 15 }}>
-            {[...Array(2)].map((_, i) => (
-              <Skeleton key={`timeSlotSkeleton-${i}`} style={{ padding: 20, marginVertical: 5 }} />
-            ))}
+            <ActivityIndicator size="large" />
           </View>
         ) : (
           <FlatList

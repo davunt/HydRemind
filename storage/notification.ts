@@ -3,7 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const timesKey = '@times';
 const intervalKey = '@intervals';
 
-export const saveNotificationConfig = async (times: [], interval: number): Promise<undefined> => {
+export const saveNotificationConfig = async (
+  times: string[],
+  interval: number
+): Promise<undefined> => {
   try {
     const timesArrayString = JSON.stringify(times);
     await Promise.all([
@@ -19,8 +22,6 @@ export const getNotificationConfig = async (): Promise<{ times: []; interval: nu
   try {
     const timesArrayString: string = (await AsyncStorage.getItem(timesKey)) ?? '[]';
     const interval: string = (await AsyncStorage.getItem(intervalKey)) ?? '0';
-
-    // if (!timesArrayString || !interval) return { times: [], interval: 0 };
 
     const times: [] = JSON.parse(timesArrayString);
 
