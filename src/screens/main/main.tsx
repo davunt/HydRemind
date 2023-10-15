@@ -206,7 +206,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     </View>
   );
 
-  const emptyListComp = () => (
+  const emptyListComp = (): React.ReactElement => (
     <View
       style={{
         flexGrow: 3,
