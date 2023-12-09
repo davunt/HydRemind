@@ -28,7 +28,6 @@ export default function ReminderConfig({
   initialEndTime,
 }: Props): React.ReactElement {
   const [timeStartOptions, setStartTimeOptions] = useState<HourOptions[]>();
-  console.log(timeStartOptions)
 
   const [timeEndOptions, setEndTimeOptions] = useState<HourOptions[]>();
 
@@ -89,7 +88,7 @@ export default function ReminderConfig({
           handleNotificationCreation(values.intervalValue, values.startTime, values.endTime);
         }}
         validate={(values) => {
-          const errors: { "endTime": boolean } = { endTime: false};
+          const errors = {};
           const endHour = parseInt(values.endTime.split(':')[0]);
           const startHour = parseInt(values.startTime.split(':')[0]);
           if ((endHour - startHour) % values.intervalValue !== 0) {
@@ -129,10 +128,9 @@ export default function ReminderConfig({
                   multiple={false}
                   loading={loading}
                   error={errors.startTime}
-                  initialSelected={[parseInt(values.startTime)]}
+                  initialSelected={[values.startTime]}
                   onSave={(selectedOptions: number[]) => {
                     void setFieldValue('startTime', selectedOptions[0]);
-                    console.log(selectedOptions);
                     getEndTimeOptions(selectedOptions[0], values.intervalValue);
                   }}
                   options={timeStartOptions}

@@ -88,7 +88,7 @@ export default function TimeSlotCard({
     data: Option[] | null | undefined,
     index: number
   ): { length: number; offset: number; index: number } => {
-    return { length: 50, offset: 50 * index, index };
+    return { length: 60, offset: 60 * index, index };
   };
 
   return (
