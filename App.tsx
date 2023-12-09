@@ -63,7 +63,6 @@ export default function App(): React.ReactElement {
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
 
-  // const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(false);
 
   Notifications.setNotificationHandler({

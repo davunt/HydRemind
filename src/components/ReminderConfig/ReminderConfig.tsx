@@ -8,10 +8,16 @@ import SelectBottomSheet from '../SelectBottomSheet/SelectBottomSheet';
 
 interface Props {
   loading: boolean;
-  handleNotificationCreation: (a: number, b: string, c: string) => {};
+  handleNotificationCreation: (a: number, b: string, c: string) => Record<string, any>;
   initialIntervalIndex: number;
   initialStartTime: string;
   initialEndTime: string;
+}
+
+interface HourOptions {
+  label: string;
+  fullLabel: string;
+  value: number;
 }
 
 export default function ReminderConfig({
@@ -21,8 +27,10 @@ export default function ReminderConfig({
   initialStartTime,
   initialEndTime,
 }: Props): React.ReactElement {
-  const [timeStartOptions, setStartTimeOptions] = useState<string[]>();
-  const [timeEndOptions, setEndTimeOptions] = useState<string[]>();
+  const [timeStartOptions, setStartTimeOptions] = useState<HourOptions[]>();
+  console.log(timeStartOptions)
+
+  const [timeEndOptions, setEndTimeOptions] = useState<HourOptions[]>();
 
   const hourOptions = [
     { label: 'Every hour', fullLabel: 'Every hour', value: 1 },
@@ -31,7 +39,7 @@ export default function ReminderConfig({
     { label: 'Every 4 hours', fullLabel: 'Every 4 hours', value: 4 },
   ];
 
-  const getEndTimeOptions = (startTime: string, timeInterval: number) => {
+  const getEndTimeOptions = (startTime: string, timeInterval: number): undefined => {
     const startHour = parseInt(startTime.split(':')[0]);
     let lastTime = startHour;
 
@@ -51,7 +59,7 @@ export default function ReminderConfig({
   };
 
   useEffect(() => {
-    const getStartTimeOptions = () => {
+    const getStartTimeOptions = (): undefined => {
       const timeOptions = [];
       for (let i = 0; i < 24; i++) {
         timeOptions.push({
@@ -77,11 +85,11 @@ export default function ReminderConfig({
           endTime: initialEndTime,
         }}
         onSubmit={(values) => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           handleNotificationCreation(values.intervalValue, values.startTime, values.endTime);
         }}
         validate={(values) => {
-          const errors = {};
+          const errors: { "endTime": boolean } = { endTime: false};
           const endHour = parseInt(values.endTime.split(':')[0]);
           const startHour = parseInt(values.startTime.split(':')[0]);
           if ((endHour - startHour) % values.intervalValue !== 0) {
@@ -107,7 +115,7 @@ export default function ReminderConfig({
                 error={errors.intervalValue}
                 initialSelected={[values.intervalValue]}
                 onSave={(selectedOptions: number[]) => {
-                  setFieldValue('intervalValue', selectedOptions[0]);
+                  void setFieldValue('intervalValue', selectedOptions[0]);
                   getEndTimeOptions(values.startTime, selectedOptions[0]);
                 }}
                 options={hourOptions}
@@ -121,9 +129,10 @@ export default function ReminderConfig({
                   multiple={false}
                   loading={loading}
                   error={errors.startTime}
-                  initialSelected={[values.startTime]}
+                  initialSelected={[parseInt(values.startTime)]}
                   onSave={(selectedOptions: number[]) => {
-                    setFieldValue('startTime', selectedOptions[0]);
+                    void setFieldValue('startTime', selectedOptions[0]);
+                    console.log(selectedOptions);
                     getEndTimeOptions(selectedOptions[0], values.intervalValue);
                   }}
                   options={timeStartOptions}
@@ -136,7 +145,7 @@ export default function ReminderConfig({
                   options={timeEndOptions}
                   initialSelected={[values.endTime]}
                   onSave={(selectedOptions: number[]) => {
-                    setFieldValue('endTime', selectedOptions[0]);
+                    void setFieldValue('endTime', selectedOptions[0]);
                   }}
                 />
               </View>

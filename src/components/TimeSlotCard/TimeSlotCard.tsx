@@ -60,7 +60,7 @@ export default function TimeSlotCard({
     }
   };
 
-  const getIcon = () => {
+  const getIcon = (): React.ReactElement => {
     const currentTime = DateTime.now();
     const timeCardTime = DateTime.fromFormat(time, 'hh:mm');
 
@@ -80,11 +80,11 @@ export default function TimeSlotCard({
       style={{ flex: 1 }}
       disabled={DateTime.fromFormat(time, 'hh:mm') > DateTime.now()}
       onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         setTempCompleted((prevState) => {
           const newState = !prevState;
-          if (newState) addHydrationStat(time);
-          else removeHydrationStat(time);
+          if (newState) void addHydrationStat(time);
+          else void removeHydrationStat(time);
           return !prevState;
         });
       }}

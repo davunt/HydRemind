@@ -22,3 +22,7 @@ web-build/
 # native dirs
 ios/
 android/
+
+# expo
+eas.json
+app.json

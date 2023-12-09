@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import { useTheme, Text, Button, Icon } from '@rneui/themed';
+import { useTheme, Text, Icon } from '@rneui/themed';
 import { FlatList, Dimensions, View, ActivityIndicator } from 'react-native';
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { DateTime } from 'luxon';
@@ -40,7 +40,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
   const [upNextTime, setUpNextTime] = useState<string>();
 
   useEffect(() => {
-    const getNotificationConfigFromStorage = async () => {
+    const getNotificationConfigFromStorage = async (): Promise<undefined> => {
       try {
         setTimesLoading(true);
         const configObject: notificationConfigType = await getNotificationConfig();
@@ -63,7 +63,6 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
             }
             return false;
           });
-          console.log(upNext);
           setUpNextTime(upNext);
         }
         setTimesLoading(false);
@@ -72,7 +71,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
       }
     };
 
-    const getDailyHydrationFromStorage = async () => {
+    const getDailyHydrationFromStorage = async (): Promise<undefined> => {
       try {
         await getTodaysHydration();
       } catch (err) {
@@ -80,11 +79,12 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
       }
     };
 
-    getNotificationConfigFromStorage();
-    getDailyHydrationFromStorage();
+
+    void getNotificationConfigFromStorage();
+    void getDailyHydrationFromStorage();
   }, [appStateVisible]);
 
-  const calculateNotficationTimes = (
+  const calculateNotificationTimes = (
     startTime: string,
     endTime: string,
     incrementHour: number
@@ -98,7 +98,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     return notificationTimes;
   };
 
-  const scheduleNotifications = async (weekday: number, time: string) => {
+  const scheduleNotifications = async (weekday: number, time: string): Promise<string> => {
     const hour = parseInt(time.split(':')[0]);
     const minute = parseInt(time.split(':')[1]);
 
@@ -132,7 +132,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
         clearTodaysHydrationStats(),
       ]);
 
-      const notificationTimes = calculateNotficationTimes(
+      const notificationTimes = calculateNotificationTimes(
         selectedActiveStartTimeq,
         selectedActiveEndTimeq,
         selectedHourRepeatq
@@ -161,11 +161,11 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     }
   };
 
-  const timeSlotComp = (item: string) => (
+  const timeSlotComp = (item: string): React.ReactElement => (
     <TimeSlotCard
       time={item}
       key={item}
-      completed={todaysHydrationSig.value[item] || false}
+      completed={Boolean(todaysHydrationSig.value[item]) || false}
       upNext={upNextTime === item}
       addHydrationStat={async (time) => {
         await addHydrationStat(time);
@@ -186,25 +186,6 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     />
   );
 
-  const devComp = (
-    <View>
-      <Text>Hello</Text>
-      <Button
-        title="Set Notication Test"
-        onPress={async () => {
-          await Notifications.scheduleNotificationAsync({
-            content: {
-              title: "Time's up!",
-              body: 'Change sides!',
-            },
-            trigger: {
-              seconds: 10,
-            },
-          });
-        }}
-      ></Button>
-    </View>
-  );
 
   const emptyListComp = (): React.ReactElement => (
     <View
@@ -262,9 +243,8 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
             inActiveStrokeOpacity={0.3}
             inActiveStrokeWidth={8}
             activeStrokeWidth={8}
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            onAnimationComplete={async () => {
-              await handleDayComplete();
+            onAnimationComplete={() => {
+              void handleDayComplete();
             }}
           />
         </View>
