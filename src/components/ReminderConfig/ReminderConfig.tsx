@@ -17,6 +17,12 @@ interface Props {
 interface HourOptions {
   label: string;
   fullLabel: string;
+  value: string;
+}
+
+interface IntervalOptions {
+  label: string;
+  fullLabel: string;
   value: number;
 }
 
@@ -31,7 +37,7 @@ export default function ReminderConfig({
 
   const [timeEndOptions, setEndTimeOptions] = useState<HourOptions[]>();
 
-  const hourOptions = [
+  const hourOptions: IntervalOptions[] = [
     { label: 'Every hour', fullLabel: 'Every hour', value: 1 },
     { label: 'Every 2 hours', fullLabel: 'Every 2 hours', value: 2 },
     { label: 'Every 3 hours', fullLabel: 'Every 3 hours', value: 3 },
@@ -88,7 +94,7 @@ export default function ReminderConfig({
           handleNotificationCreation(values.intervalValue, values.startTime, values.endTime);
         }}
         validate={(values) => {
-          const errors = {};
+          const errors: Record<string, any> = {};
           const endHour = parseInt(values.endTime.split(':')[0]);
           const startHour = parseInt(values.startTime.split(':')[0]);
           if ((endHour - startHour) % values.intervalValue !== 0) {
@@ -97,7 +103,7 @@ export default function ReminderConfig({
           return errors;
         }}
       >
-        {({ setFieldValue, handleSubmit, values, errors }) => (
+        {({ setFieldValue, handleSubmit, values, errors}) => (
           <View style={styles.container}>
             <View
               style={{
@@ -129,7 +135,7 @@ export default function ReminderConfig({
                   loading={loading}
                   error={errors.startTime}
                   initialSelected={[values.startTime]}
-                  onSave={(selectedOptions: number[]) => {
+                  onSave={(selectedOptions: string[] | string[]) => {
                     void setFieldValue('startTime', selectedOptions[0]);
                     getEndTimeOptions(selectedOptions[0], values.intervalValue);
                   }}

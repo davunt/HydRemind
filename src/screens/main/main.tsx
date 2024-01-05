@@ -138,7 +138,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
         selectedHourRepeatq
       );
 
-      const scheduleNotificationPromises: Promise<string[]> = [];
+      const scheduleNotificationPromises: Array<Promise<string>> = [];
 
       const days = [1, 2, 3, 4, 5, 6, 7];
 
@@ -165,7 +165,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     <TimeSlotCard
       time={item}
       key={item}
-      completed={Boolean(todaysHydrationSig.value[item]) || false}
+      completed={Boolean((todaysHydrationSig.value as Record<string, any>)[item]) || false}
       upNext={upNextTime === item}
       addHydrationStat={async (time) => {
         await addHydrationStat(time);

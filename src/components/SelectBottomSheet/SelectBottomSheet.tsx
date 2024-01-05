@@ -5,24 +5,20 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Icon } from '@rneui/base';
 import { View, FlatList } from 'react-native';
 
-interface Props {
-  title: string;
-  initialSelected: number[];
-  multiple: boolean;
-  loading: boolean;
-  error: string | undefined;
-  onSave: (selectedOptions: number[]) => void;
-  options: Array<{
-    label: string;
-    fullLabel: string;
-    value: number;
-  }>;
-}
-
 interface Option {
   label: string;
   fullLabel: string;
-  value: number;
+  value: string | number;
+}
+
+interface Props {
+  title: string;
+  initialSelected: any[];
+  multiple: boolean;
+  loading: boolean;
+  error: string | undefined;
+  onSave: (selectedOptions: any[]) => void;
+  options: Option[] | undefined;
 }
 
 export default function TimeSlotCard({
@@ -40,8 +36,8 @@ export default function TimeSlotCard({
 
   const bottomSheetSnapPoints = useMemo(() => ['60%'], []);
 
-  const [listOptions, setListOptions] = useState<Option[]>(options);
-  const [selected, setSelected] = useState<number[]>(initialSelected);
+  const [listOptions, setListOptions] = useState<Option[] | undefined>(options);
+  const [selected, setSelected] = useState<any[]>(initialSelected);
 
   useEffect(() => {
     setSelected(initialSelected);
@@ -59,7 +55,7 @@ export default function TimeSlotCard({
     if (index < 0) handleSave(); // if sheet hidden
   };
 
-  const selectItem = (selectedIndex: number): undefined => {
+  const selectItem = (selectedIndex: string | number): undefined => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (multiple) {
@@ -129,6 +125,7 @@ export default function TimeSlotCard({
               ? listOptions.findIndex((option) => option.value === selected[0])
               : 0
           }
+          // @ts-expect-error getItemLayout is an available override function 
           getItemLayout={getItemLayout}
           stickyHeaderIndices={[0]}
           ListHeaderComponent={
