@@ -1,9 +1,10 @@
 <h1 align="center">HydRemind - Hydration Reminder Aspp</h1>
 
-<div align="center">
 Stay refreshed and rejuvenated with HydRemind, the simplest hydration app on the market!
 Simply provide the time you want to start receiving notifications and how often you want to be reminded throughout your day.
 HydRemind also allows you to keep track of when you have hydrated so you can make sure you're meeting your hydration goals every day!
+
+<div align="center">
 
 <!-- ![App Screenshot](assets/appScreenshot.png) -->
 <img src="assets/appScreenshot.png" alt="App Screenshot" width="200"/>
