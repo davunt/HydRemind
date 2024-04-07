@@ -23,6 +23,3 @@ web-build/
 ios/
 android/
 
-# expo
-eas.json
-app.json

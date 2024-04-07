@@ -7,7 +7,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
-    "lint": " tsc --noEmit && eslint . --ext .ts,.js,.tsx,.jsx"
+    "lint": " tsc --noEmit && eslint . --ext .ts,.js,.tsx,.jsx",
+    "prepare": "husky"
   },
   "jest": {
     "preset": "react-native"
@@ -55,6 +56,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-native": "^4.1.0",
+    "husky": "^9.0.11",
     "jest": "^29.5.0",
     "prettier": "2.8.7",
     "typescript": "^5.4.4"
