@@ -1,31 +1,29 @@
-import React, { useEffect, useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import { useTheme, Text, Icon } from '@rneui/themed';
-import { FlatList, Dimensions, View, ActivityIndicator } from 'react-native';
-import CircularProgress from 'react-native-circular-progress-indicator';
-import { DateTime } from 'luxon';
 import * as Notifications from 'expo-notifications';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Dimensions, FlatList, View } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
+import { Icon, Text, useTheme } from '@rneui/themed';
+import { DateTime } from 'luxon';
+import CircularProgress from 'react-native-circular-progress-indicator';
+import { getNotificationConfig, saveNotificationConfig } from '../../../storage/notification';
+import {
+  addHydrationStat,
+  clearTodaysHydrationStats,
+  getTodaysHydration,
+  removeHydrationStat,
+  todaysHydrationSig,
+} from '../../../storage/dailyHydration';
 
 import ReminderConfig from '../../components/ReminderConfig/ReminderConfig';
 import TimeSlotCard from '../../components/TimeSlotCard/TimeSlotCard';
 
-import { saveNotificationConfig, getNotificationConfig } from '../../../storage/notification';
-import {
-  getTodaysHydration,
-  addHydrationStat,
-  removeHydrationStat,
-  clearTodaysHydrationStats,
-  todaysHydrationSig,
-} from '../../../storage/dailyHydration';
+import { hydrationFacts } from '../..//utils/hydrationsFacts';
+
+import type { notificationConfigType } from '../../types';
 
 interface Props {
   appStateVisible: boolean;
-}
-
-interface notificationConfigType {
-  interval: number;
-  times: string[];
 }
 
 export default function App({ appStateVisible }: Props): React.ReactElement {
@@ -79,7 +77,6 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
       }
     };
 
-
     void getNotificationConfigFromStorage();
     void getDailyHydrationFromStorage();
   }, [appStateVisible]);
@@ -98,14 +95,20 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     return notificationTimes;
   };
 
+  const getHydrationFact = (): string => {
+    const factsLength = hydrationFacts.length;
+    const factNum = Math.floor(Math.random() * factsLength);
+    return hydrationFacts[factNum];
+  };
+
   const scheduleNotifications = async (weekday: number, time: string): Promise<string> => {
     const hour = parseInt(time.split(':')[0]);
     const minute = parseInt(time.split(':')[1]);
 
     return await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'HydRemind',
-        body: 'Time to hydrate!',
+        title: 'Time to hydrate!',
+        body: getHydrationFact(),
         sound: 'defaultCritical',
         categoryIdentifier: 'WaterReminder',
         data: { weekday, time },
@@ -185,7 +188,6 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
       initialEndTime={selectedActiveEndTime}
     />
   );
-
 
   const emptyListComp = (): React.ReactElement => (
     <View
