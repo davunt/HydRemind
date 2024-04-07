@@ -86,7 +86,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     endTime: string,
     incrementHour: number
   ): string[] => {
-    const notificationTimes = [];
+    const notificationTimes: string[] = [];
     let lastSetTime = DateTime.fromFormat(startTime, 'hh:mm');
     while (lastSetTime <= DateTime.fromFormat(endTime, 'hh:mm')) {
       notificationTimes.push(lastSetTime.toLocaleString(DateTime.TIME_24_SIMPLE));

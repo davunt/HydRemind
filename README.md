@@ -47,3 +47,15 @@ EAS Scripts:
 
 ESLint is used to analyze code to find issues and to enforce coding style. The ESLint config can be found in `.eslintrc.json`.
 The ESLint configuration for this project uses prettier to allow for automatic formatting in a number of code editors.
+
+### Upgrades
+
+#### Expo
+
+Follow latest steps to update expo and related packages [here](https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/)
+
+## Build
+
+1. Update build number in `eas.json`
+2. run `eas build -p <platform>`
+3. run `eas submit -p <platform>`

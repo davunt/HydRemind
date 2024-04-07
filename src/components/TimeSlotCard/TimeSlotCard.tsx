@@ -65,11 +65,18 @@ export default function TimeSlotCard({
     const timeCardTime = DateTime.fromFormat(time, 'hh:mm');
 
     if (tempCompleted) {
-      return <Icon name="checkmark-circle-outline" type="ionicon" color={theme.colors.primary} />;
+      return (
+        <Icon
+          name="checkmark-circle-outline"
+          type="ionicon"
+          color={theme.colors.primary}
+          size={30}
+        />
+      );
     } else if (timeCardTime < currentTime) {
-      return <Icon name="ellipse-outline" type="ionicon" color={theme.colors.primary} />;
+      return <Icon name="ellipse-outline" type="ionicon" color={theme.colors.primary} size={30} />;
     } else if (upNext) {
-      return <Icon name="alarm-outline" type="ionicon" />;
+      return <Icon name="alarm-outline" type="ionicon" size={30} />;
     }
 
     return <></>;
