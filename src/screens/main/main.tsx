@@ -238,13 +238,13 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
           <CircularProgress
             value={getPercentComplete()}
             radius={25}
-            progressValueColor={theme.colors.primary}
-            activeStrokeColor={theme.colors.primary}
+            progressValueColor={theme.colors.black}
+            activeStrokeColor={theme.colors.black}
             maxValue={100}
             valueSuffix={'%'}
             inActiveStrokeOpacity={0.3}
-            inActiveStrokeWidth={8}
-            activeStrokeWidth={8}
+            inActiveStrokeWidth={5}
+            activeStrokeWidth={5}
             onAnimationComplete={() => {
               void handleDayComplete();
             }}

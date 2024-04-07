@@ -125,7 +125,7 @@ export default function TimeSlotCard({
               ? listOptions.findIndex((option) => option.value === selected[0])
               : 0
           }
-          // @ts-expect-error getItemLayout is an available override function 
+          // @ts-expect-error getItemLayout is an available override function
           getItemLayout={getItemLayout}
           stickyHeaderIndices={[0]}
           ListHeaderComponent={
@@ -153,7 +153,7 @@ export default function TimeSlotCard({
               {selected.includes(item.value) ? (
                 <Icon name="checkmark-circle-outline" type="ionicon" color={theme.colors.primary} />
               ) : (
-                <Icon name="ellipse-outline" type="ionicon" color={theme.colors.black} />
+                <Icon name="ellipse-outline" type="ionicon" color={theme.colors.primary} />
               )}
               <ListItem.Content>
                 <ListItem.Subtitle>{item.fullLabel}</ListItem.Subtitle>

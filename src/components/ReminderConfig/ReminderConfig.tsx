@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Formik } from 'formik';
 import * as Haptics from 'expo-haptics';
-import { Text, Button } from '@rneui/themed';
+import { Text, Button, useTheme } from '@rneui/themed';
 
 import SelectBottomSheet from '../SelectBottomSheet/SelectBottomSheet';
 
@@ -33,6 +33,8 @@ export default function ReminderConfig({
   initialStartTime,
   initialEndTime,
 }: Props): React.ReactElement {
+  const { theme } = useTheme();
+
   const [timeStartOptions, setStartTimeOptions] = useState<HourOptions[]>();
 
   const [timeEndOptions, setEndTimeOptions] = useState<HourOptions[]>();
@@ -103,7 +105,7 @@ export default function ReminderConfig({
           return errors;
         }}
       >
-        {({ setFieldValue, handleSubmit, values, errors}) => (
+        {({ setFieldValue, handleSubmit, values, errors }) => (
           <View style={styles.container}>
             <View
               style={{
@@ -159,6 +161,7 @@ export default function ReminderConfig({
                 title="Save"
                 loading={loading}
                 disabled={Object.keys(errors).length > 0}
+                color={theme.colors.primary}
                 onPress={() => {
                   handleSubmit();
                 }}

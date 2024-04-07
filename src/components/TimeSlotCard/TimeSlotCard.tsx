@@ -65,9 +65,9 @@ export default function TimeSlotCard({
     const timeCardTime = DateTime.fromFormat(time, 'hh:mm');
 
     if (tempCompleted) {
-      return <Icon name="checkmark-circle-outline" type="ionicon" />;
+      return <Icon name="checkmark-circle-outline" type="ionicon" color={theme.colors.primary} />;
     } else if (timeCardTime < currentTime) {
-      return <Icon name="ellipse-outline" type="ionicon" />;
+      return <Icon name="ellipse-outline" type="ionicon" color={theme.colors.primary} />;
     } else if (upNext) {
       return <Icon name="alarm-outline" type="ionicon" />;
     }
@@ -85,6 +85,7 @@ export default function TimeSlotCard({
           const newState = !prevState;
           if (newState) void addHydrationStat(time);
           else void removeHydrationStat(time);
+          console.log(!prevState);
           return !prevState;
         });
       }}
@@ -93,10 +94,8 @@ export default function TimeSlotCard({
         containerStyle={{
           flex: 1,
           minHeight: 100,
-          backgroundColor: tempCompleted ? theme.colors.primary : theme.colors.white,
           margin: 5,
           marginBottom: 5,
-          ...(upNext ? { borderColor: theme.colors.primary, borderWidth: 2 } : {}),
         }}
       >
         <View
@@ -125,9 +124,6 @@ export default function TimeSlotCard({
           </View>
         </View>
         <>
-          {upNext && (
-            <Text style={{ fontWeight: '200', color: theme.colors.primary }}>Next up</Text>
-          )}
           <Text style={{ fontWeight: '200' }}>{relativeTime}</Text>
         </>
       </Card>
