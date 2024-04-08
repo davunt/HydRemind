@@ -92,7 +92,6 @@ export default function TimeSlotCard({
           const newState = !prevState;
           if (newState) void addHydrationStat(time);
           else void removeHydrationStat(time);
-          console.log(!prevState);
           return !prevState;
         });
       }}

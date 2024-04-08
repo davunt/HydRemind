@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, View } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { Icon, Text, useTheme } from '@rneui/themed';
+import { Button } from '@rneui/base';
 import { DateTime } from 'luxon';
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { getNotificationConfig, saveNotificationConfig } from '../../../storage/notification';
@@ -114,10 +115,9 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
         data: { weekday, time },
       },
       trigger: {
-        weekday,
-        repeats: true,
         hour,
         minute,
+        repeats: true,
       },
     });
   };
@@ -143,6 +143,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
 
       const scheduleNotificationPromises: Array<Promise<string>> = [];
 
+      // 1 is Sunday, 7 is Saturday
       const days = [1, 2, 3, 4, 5, 6, 7];
 
       days.forEach((day) => {
@@ -207,7 +208,20 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     </View>
   );
 
-  const carouselPages = [reminderConfigComp];
+  const devComp = (
+    <View>
+      <Button
+        onPress={() => {
+          const time = DateTime.now().plus({ minutes: 1 }).toLocaleString(DateTime.TIME_24_SIMPLE);
+          void scheduleNotifications(1, time);
+        }}
+      >
+        Test notifications
+      </Button>
+    </View>
+  );
+
+  const carouselPages = [reminderConfigComp, devComp];
 
   const getPercentComplete = (): number => {
     const percValue = Math.round(
