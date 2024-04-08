@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { DateTime } from 'luxon';
-import { View, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useTheme, Card, Text, Icon } from '@rneui/themed';
+import { Card, Icon, Text, useTheme } from '@rneui/themed';
+import { DateTime } from 'luxon';
+import { Pressable, View } from 'react-native';
 
 interface Props {
   time: string;

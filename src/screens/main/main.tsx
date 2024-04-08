@@ -1,13 +1,12 @@
+import React, { useEffect, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, FlatList, View } from 'react-native';
-import Carousel from 'react-native-reanimated-carousel';
-import { Icon, Text, useTheme } from '@rneui/themed';
 import { Button } from '@rneui/base';
+import { Icon, Text, useTheme } from '@rneui/themed';
 import { DateTime } from 'luxon';
+import { ActivityIndicator, Dimensions, FlatList, View } from 'react-native';
 import CircularProgress from 'react-native-circular-progress-indicator';
-import { getNotificationConfig, saveNotificationConfig } from '../../../storage/notification';
+import Carousel from 'react-native-reanimated-carousel';
 import {
   addHydrationStat,
   clearTodaysHydrationStats,
@@ -15,12 +14,10 @@ import {
   removeHydrationStat,
   todaysHydrationSig,
 } from '../../../storage/dailyHydration';
-
+import { getNotificationConfig, saveNotificationConfig } from '../../../storage/notification';
+import { hydrationFacts } from '../..//utils/hydrationsFacts';
 import ReminderConfig from '../../components/ReminderConfig/ReminderConfig';
 import TimeSlotCard from '../../components/TimeSlotCard/TimeSlotCard';
-
-import { hydrationFacts } from '../..//utils/hydrationsFacts';
-
 import type { notificationConfigType } from '../../types';
 
 interface Props {

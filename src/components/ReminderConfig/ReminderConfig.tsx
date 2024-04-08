@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Formik } from 'formik';
+import React, { useEffect, useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import { Text, Button, useTheme } from '@rneui/themed';
-
+import { Button, Text, useTheme } from '@rneui/themed';
+import { Formik } from 'formik';
+import { StyleSheet, View } from 'react-native';
 import SelectBottomSheet from '../SelectBottomSheet/SelectBottomSheet';
 
 interface Props {

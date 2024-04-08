@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import { useTheme, Button, ListItem } from '@rneui/themed';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Icon } from '@rneui/base';
-import { View, FlatList } from 'react-native';
+import { Button, ListItem, useTheme } from '@rneui/themed';
+import { FlatList, View } from 'react-native';
 
 interface Option {
   label: string;

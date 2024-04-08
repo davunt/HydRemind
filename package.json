@@ -7,7 +7,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
-    "lint": " tsc --noEmit && eslint . --ext .ts,.js,.tsx,.jsx",
+    "lint": "tsc --noEmit && eslint . --ext .ts,.js,.tsx,.jsx",
+    "format": "npx prettier . --write",
     "prepare": "husky"
   },
   "jest": {
@@ -15,7 +16,7 @@
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^4.6.1",
-    "@preact/signals-react": "^2.0.1",
+    "@preact/signals-react": "^1.2.1",
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-community/datetimepicker": "^7.6.4",
     "@rneui/base": "^4.0.0-rc.7",
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/luxon": "^3.2.0",
     "@types/react": "~18.2.45",
     "@typescript-eslint/eslint-plugin": "^6.17.0",
@@ -58,7 +60,7 @@
     "eslint-plugin-react-native": "^4.1.0",
     "husky": "^9.0.11",
     "jest": "^29.5.0",
-    "prettier": "2.8.7",
+    "prettier": "^3.2.5",
     "typescript": "^5.4.4"
   },
   "private": true,

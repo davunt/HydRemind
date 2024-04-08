@@ -1,15 +1,13 @@
 import React, { type ReactElement, useEffect, useRef, useState } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ThemeProvider, useTheme, useThemeMode } from '@rneui/themed';
-import { Platform, AppState, View, useColorScheme } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-
-import theme from './theme';
-
+import { ThemeProvider, useTheme, useThemeMode } from '@rneui/themed';
+import { AppState, Platform, View, useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import MainScreen from './src/screens/main/main';
+import theme from './theme';
 
 interface WrapperProps {
   children: ReactElement;
