@@ -140,13 +140,8 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
 
       const scheduleNotificationPromises: Array<Promise<string>> = [];
 
-      // 1 is Sunday, 7 is Saturday
-      const days = [1, 2, 3, 4, 5, 6, 7];
-
-      days.forEach((day) => {
-        notificationTimes.forEach((time) => {
-          scheduleNotificationPromises.push(scheduleNotifications(day, time));
-        });
+      notificationTimes.forEach((time) => {
+        scheduleNotificationPromises.push(scheduleNotifications(1, time));
       });
 
       await Promise.all(scheduleNotificationPromises);
@@ -224,7 +219,6 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
     const percValue = Math.round(
       (Object.keys(todaysHydrationSig.value).length / timeSLots.length) * 100
     );
-    console.log(isNaN(percValue));
     if (isNaN(percValue)) return 0;
     else return percValue;
   };
@@ -246,7 +240,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
           </Text>
         </View>
         <View style={{ padding: 10, paddingBottom: 0 }}>
-          <CircularProgress
+          {/* <CircularProgress
             value={getPercentComplete()}
             radius={25}
             progressValueColor={theme.colors.black}
@@ -259,7 +253,7 @@ export default function App({ appStateVisible }: Props): React.ReactElement {
             onAnimationComplete={() => {
               void handleDayComplete();
             }}
-          />
+          /> */}
         </View>
       </View>
       <View style={{ flex: 2 }}>
